@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-mist text-ink font-sans antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-[-0.01em];
+  }
+  ::selection {
+    background: #005eb8;
+    color: #fff;
+  }
+}
+
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-shell px-5 sm:px-6;
+  }
+  /* The clickable demo runs inside a phone frame on larger screens */
+  .phone-shell {
+    @apply mx-auto w-full max-w-phone;
+  }
+  .eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[0.16em] text-royal;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[5px] font-semibold transition-all duration-200 select-none active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-royal/25;
+  }
+  .btn-primary {
+    @apply btn border-2 border-transparent bg-royal text-white hover:bg-royal-700;
+  }
+  .btn-secondary {
+    @apply btn border-2 border-royal bg-white text-royal hover:bg-sky-soft;
+  }
+  .btn-ghost {
+    @apply btn text-royal hover:bg-sky-soft;
+  }
+  .btn-lg { @apply h-12 px-6 text-[15px]; }
+  .btn-md { @apply h-10 px-4 text-sm; }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 text-[13px] font-medium text-slatey transition-colors;
+  }
+  .chip-active {
+    @apply border-royal bg-royal text-white;
+  }
+  .surface {
+    @apply rounded-card bg-white shadow-tile ring-1 ring-line/70;
+  }
+  .field-label {
+    @apply mb-1.5 block text-[13px] font-semibold text-navy;
+  }
+  .field {
+    @apply h-12 w-full rounded-[5px] border border-line bg-white px-4 text-[15px] text-ink placeholder:text-slatey/60 transition-colors focus:border-royal focus:outline-none focus:ring-4 focus:ring-royal/15;
+  }
+  .field-error { @apply border-uobred focus:border-uobred focus:ring-uobred/15; }
+}
+
+/* hide scrollbars on horizontal rails but keep them scrollable */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
