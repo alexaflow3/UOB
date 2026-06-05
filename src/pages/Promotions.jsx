@@ -12,7 +12,7 @@ const REWARD = {
   airpods: { bg: 'linear-gradient(135deg,#1b2a3d,#39516f)', emoji: '🎧' },
   cash: { bg: 'linear-gradient(135deg,#0a7a43,#16a35c)', emoji: '💵' },
   miles: { bg: 'linear-gradient(135deg,#005eb8,#00237b)', emoji: '✈️' },
-  dyson: { bg: 'linear-gradient(135deg,#7a2150,#b0306b)', emoji: '💨' },
+  luggage: { bg: 'linear-gradient(135deg,#7a2150,#b0306b)', emoji: '🧳' },
 }
 
 export default function Promotions() {

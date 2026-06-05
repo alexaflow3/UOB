@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { cardBySlug } from '../data/cards'
-import CardArt from '../components/CardArt'
+import { cardBySlug, PROMOS } from '../data/cards'
+import CardArt, { isPortraitArt } from '../components/CardArt'
 import { Icon } from '../lib/icons'
 import uobLogo from '../assets/uob-logo.png'
 
@@ -54,6 +54,11 @@ export default function Apply() {
         </div>
       </header>
 
+      {/* Persistent "why this card" hook — kept visible on every step so the
+          reason to want the card never leaves the screen (head-of-design).
+          The category cashback tiles live inside this strip. */}
+      <CardHook card={card} />
+
       <div className="px-5 py-6">
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
@@ -65,6 +70,180 @@ export default function Apply() {
         </AnimatePresence>
       </div>
     </div>
+  )
+}
+
+/* ---------- Persistent desire hook (all steps) ---------- */
+// Three punchy reasons-to-want, shown as number labels across every step.
+function applyPerks(card) {
+  const promo = PROMOS.find((p) => p.cards.includes(card.slug))
+  const earnLabel =
+    card.tier === 'Travel'
+      ? 'miles per S$1 on travel & dining'
+      : card.tier === 'Cashback'
+      ? 'cashback on your everyday spend'
+      : 'bonus rewards on your spend'
+  // The card stats only — the welcome gift is promoted separately (see
+  // CardHook) so the actual reward, not the word "Free", is the headline.
+  return [
+    { value: card.earn.rate, label: earnLabel },
+    { value: 'S$0', label: 'annual fee in your first year' },
+    { value: 'Instant', label: 'approval for most applicants' },
+  ]
+}
+
+// Real reward photos are the hero. Drop product shots into src/assets named
+// reward-<key>.{png,jpg} (e.g. reward-airpods.png) and they replace the
+// placeholder automatically. Until then we fall back to an emoji-on-gradient
+// badge so the layout still reads.
+const REWARD_IMG = import.meta.glob('../assets/reward-*.{png,jpg}', { eager: true, import: 'default' })
+const rewardImg = (key) => REWARD_IMG[`../assets/reward-${key}.png`] || REWARD_IMG[`../assets/reward-${key}.jpg`]
+const REWARD_BADGE = {
+  airpods: { bg: 'linear-gradient(135deg,#1b2a3d,#39516f)', emoji: '🎧' },
+  cash: { bg: 'linear-gradient(135deg,#0a7a43,#16a35c)', emoji: '💵' },
+  miles: { bg: 'linear-gradient(135deg,#005eb8,#00237b)', emoji: '✈️' },
+  luggage: { bg: 'linear-gradient(135deg,#7a2150,#b0306b)', emoji: '🧳' },
+}
+
+// Brand partner logos for the category cashback tiles. Drop real logos into
+// src/assets named brand-<key>.{png,svg,jpg} and they replace the text label.
+const BRAND_IMG = import.meta.glob('../assets/brands/brand-*.{png,jpg,svg}', { eager: true, import: 'default' })
+const brandImg = (key) =>
+  BRAND_IMG[`../assets/brands/brand-${key}.png`] ||
+  BRAND_IMG[`../assets/brands/brand-${key}.svg`] ||
+  BRAND_IMG[`../assets/brands/brand-${key}.jpg`]
+const BRAND_LABEL = {
+  mcdonalds: 'McDonald’s',
+  grabfood: 'GrabFood',
+  grab: 'Grab',
+  simplygo: 'SimplyGo',
+  shopee: 'Shopee',
+  spgroup: 'SP Group',
+  shell: 'Shell',
+  spc: 'SPC',
+  applepay: 'Apple Pay',
+  googlepay: 'Google Pay',
+  netflix: 'Netflix',
+  spotify: 'Spotify',
+  foodpanda: 'foodpanda',
+  sia: 'Singapore Airlines',
+  scoot: 'Scoot',
+  uobtravel: 'UOB Travel',
+  lazada: 'Lazada',
+  redmart: 'RedMart',
+  dragonpass: 'DragonPass',
+}
+
+function CardHook({ card }) {
+  const promos = PROMOS.filter((p) => p.cards.includes(card.slug))
+  // Only keep tiles that have at least one real brand logo — a tile with no
+  // image is dropped rather than shown as a bare text card.
+  const tiles = (card.applyTiles || []).filter(
+    (t) => (t.brands || []).some((b) => brandImg(b)),
+  )
+  const short = card.name.replace('UOB ', '')
+  // Reward noun — keeps the subtext honest per card type.
+  const metrics = (tiles || []).map((t) => (t.metric || '').toLowerCase()).join(' ')
+  const noun = metrics.includes('rebate')
+    ? 'rebates'
+    : metrics.includes('mile') || card.tier === 'Travel'
+    ? 'miles'
+    : metrics.includes('uni$') || card.tier === 'Rewards'
+    ? 'rewards'
+    : 'cashback'
+  return (
+    <section className="bg-navy px-5 py-4 text-white">
+      <h2 className="font-display text-[20px] font-extrabold leading-tight text-white">
+        Enjoy more on everything you buy
+      </h2>
+      <p className="mt-1.5 text-[13px] leading-snug text-white/70">
+        Earn {noun} every time you spend on the things you love.
+      </p>
+
+      {/* Category earn tiles — the UOB "where you earn" strip, now the hero of
+          this dark-blue band. Falls back to headline stats for any card without
+          tiles defined. White tiles read cleanly on navy. */}
+      {tiles && tiles.length > 0 ? (
+        <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+          {tiles.map((t) => (
+            <div key={t.category} className="flex w-[180px] shrink-0 flex-col overflow-hidden rounded-tile bg-white text-left ring-1 ring-white/15">
+              <div className="flex flex-1 flex-col px-3 pb-3.5 pt-3.5">
+                {t.brands && t.brands.length > 0 && (
+                  <div className="flex flex-1 flex-row flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5">
+                    {t.brands.map((b) => {
+                      const logo = brandImg(b)
+                      return logo ? (
+                        <span key={b} className="flex items-center justify-center">
+                          {/* Logos are pre-cropped to content, so a single fixed
+                              height makes them read at the same visual size when
+                              sitting next to each other. w-auto keeps them
+                              proportionate. */}
+                          <img src={logo} alt={BRAND_LABEL[b] || b} className="h-9 w-auto max-w-full object-contain" />
+                        </span>
+                      ) : (
+                        <span key={b} className="text-[13px] font-bold leading-none text-navy">{BRAND_LABEL[b] || b}</span>
+                      )
+                    })}
+                  </div>
+                )}
+                {/* Cashback value anchored to the bottom of the tile so it lines
+                    up across the strip regardless of how the logos stack. */}
+                <p className={`mt-auto whitespace-nowrap text-[12px] font-extrabold leading-tight text-navy ${t.brands && t.brands.length > 0 ? 'pt-3' : ''}`}>
+                  {t.value} {t.metric}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-3 grid grid-cols-3 gap-3">
+          {applyPerks(card).map((p) => (
+            <div key={p.label} className="border-l border-white/15 pl-3 first:border-l-0 first:pl-0">
+              <p className="font-display text-[18px] font-extrabold leading-none text-white">{p.value}</p>
+              <p className="mt-1.5 text-[11px] leading-tight text-white/65">{p.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Welcome gift — SingSaver-style: the reward photo IS the hero (Kamil:
+          "Free" means nothing, free AirPods do). Image-led tiles with the name
+          + worth below; multiple gifts scroll side by side. */}
+      {promos.length > 0 && (
+        <div className="mt-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-sky">
+            {promos.length > 1 ? 'Choose your free welcome gift' : 'Free welcome gift'}
+          </p>
+          <div className="mt-2 flex gap-2.5 overflow-x-auto pb-0.5">
+            {promos.map((p) => {
+              const img = rewardImg(p.rewardImage)
+              const badge = REWARD_BADGE[p.rewardImage] || REWARD_BADGE.cash
+              return (
+                <div
+                  key={p.id}
+                  className="w-[132px] shrink-0 overflow-hidden rounded-tile bg-white ring-1 ring-white/15"
+                >
+                  <div
+                    className="grid aspect-[4/3] place-items-center overflow-hidden"
+                    style={img ? undefined : { background: badge.bg }}
+                  >
+                    {img ? (
+                      <img src={img} alt={p.reward} loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-[34px]">{badge.emoji}</span>
+                    )}
+                  </div>
+                  <div className="px-2.5 py-2">
+                    <p className="text-[12px] font-bold leading-tight text-navy">{p.reward}</p>
+                    {p.worth && <p className="mt-0.5 text-[11px] leading-tight text-slatey">Worth {p.worth}</p>}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -82,7 +261,11 @@ function StepEligibility({ card, onNext }) {
   return (
     <div className="space-y-5">
       <div className="text-center">
-        <div className="mx-auto w-[15%] max-w-[58px]"><CardArt card={card} bare /></div>
+        {/* Portrait faces (One, EVOL) fill this width vertically; landscape
+            faces read much shorter, so give them a wider column to match. */}
+        <div className={`mx-auto ${isPortraitArt(card) ? 'w-[22%] max-w-[84px]' : 'w-[42%] max-w-[150px]'}`}>
+          <CardArt card={card} bare />
+        </div>
         <h1 className="mt-4 font-display text-[22px] font-extrabold leading-tight text-navy">Apply for the {card.name.replace('UOB ', '')}</h1>
         <p className="mt-1.5 text-[14px] text-slatey">Takes about 5 minutes. Let's first check you qualify.</p>
       </div>
@@ -164,7 +347,7 @@ function StepMethod({ card, onBack, onNext }) {
       <section className="rounded-card bg-sky-soft p-4 ring-1 ring-royal/15">
         <p className="text-[11px] font-bold uppercase tracking-wide text-royal">You’re applying for</p>
         <div className="mt-2 flex items-center gap-3.5">
-          <div className="w-[34%] max-w-[110px] shrink-0"><CardArt card={card} /></div>
+          <div className="w-[44%] max-w-[150px] shrink-0"><CardArt card={card} /></div>
           <div className="min-w-0">
             <h1 className="font-display text-[16px] font-extrabold leading-tight text-navy">{card.name}</h1>
             <p className="mt-0.5 text-[13px] leading-snug text-slatey">{card.headline}</p>

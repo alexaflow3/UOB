@@ -12,3 +12,6 @@ npm-debug.log*
 .DS_Store
 .vscode
 .idea
+
+# logo source backups (not used by the build)
+src/assets/brands/_original

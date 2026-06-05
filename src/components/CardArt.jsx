@@ -12,6 +12,17 @@ const FILES = import.meta.glob('../assets/card-*.{jpg,png}', { eager: true, impo
 const jpgArt = (key) => FILES[`../assets/card-${key}.jpg`]
 const pngArt = (key) => FILES[`../assets/card-${key}.png`]
 
+// True when the card has a transparent-edge PNG, i.e. it can float `bare`
+// without a framing tile. JPG-only cards keep the framed tile so their baked
+// white background doesn't show as a hard rectangle.
+export const hasBareArt = (card) => Boolean(pngArt(card?.image))
+
+// Portrait card faces (vertical orientation) read taller-than-wide and so want
+// a narrower hero column; landscape faces want a wider one. Used to size the
+// floating bare-art hero per card.
+const PORTRAIT_KEYS = new Set(['one', 'evol'])
+export const isPortraitArt = (card) => PORTRAIT_KEYS.has(card?.image)
+
 export default function CardArt({ card, className = '', floating = false, bare = false, plain = false }) {
   const name = card?.name?.replace('UOB ', '') || 'Card'
   const src = bare

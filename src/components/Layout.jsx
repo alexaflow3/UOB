@@ -50,8 +50,10 @@ function BottomNav() {
               to={t.to}
               end={t.end}
               className={({ isActive }) =>
-                `relative flex flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-[11px] font-semibold transition-colors ${
-                  isActive ? 'text-royal' : 'text-slatey hover:text-navy'
+                `relative flex flex-1 flex-col items-center gap-0.5 rounded-xl py-2 text-[11px] font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-royal text-white shadow-[0_6px_16px_-6px_rgba(0,94,184,0.6)]'
+                    : 'text-slatey hover:bg-mist hover:text-navy'
                 }`
               }
             >
