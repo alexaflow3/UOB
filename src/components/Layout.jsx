@@ -110,17 +110,11 @@ export default function Layout() {
         />
       </div>
 
-      {/* The phone — iPhone 17 Pro Max footprint (440 × 956 pt); fixed-height
-          device on desktop, only the screen scrolls. Caps to the viewport on
-          shorter displays so it never clips. */}
-      <div className="relative z-10 mx-auto w-full max-w-phone bg-mist lg:h-[956px] lg:max-h-[calc(100vh-2rem)] lg:rounded-[55px] lg:p-3 lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.7)] lg:ring-1 lg:ring-white/10">
-        {/* Render the in-device view at 90% — matches the scale that reads best
-            (equivalent to Chrome's 90% zoom). `zoom` reflows like browser zoom,
-            unlike transform:scale which would leave layout gaps. */}
-        <div
-          style={{ zoom: 0.9 }}
-          className="relative min-h-screen overflow-hidden bg-mist lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:rounded-[46px]"
-        >
+      {/* The phone — slim, tall device that fills the available viewport height
+          on desktop (so it never reads short-and-chunky), width fixed to the
+          mobile footprint. Only the screen scrolls. */}
+      <div className="relative z-10 mx-auto w-full max-w-phone bg-mist lg:h-[calc(100vh-2rem)] lg:rounded-[55px] lg:p-3 lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.7)] lg:ring-1 lg:ring-white/10">
+        <div className="relative min-h-screen overflow-hidden bg-mist lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:rounded-[46px]">
           {!isApply && <Header />}
           <main ref={screenRef} className="pb-28 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
             <Outlet />
