@@ -5,6 +5,11 @@ import { CARDS, USE_CASES } from '../data/cards'
 import { useCaseIcon, Icon } from '../lib/icons'
 import DecisionTile from '../components/DecisionTile'
 
+// Cards hidden from the listing view only — their detail pages and any promo
+// links still work; they're just not surfaced in the browse grid.
+const HIDDEN_FROM_LISTING = ['absolute-cashback-card', 'lazada-uob-card', 'visa-infinite-metal-card']
+const LISTED = CARDS.filter((c) => !HIDDEN_FROM_LISTING.includes(c.slug))
+
 // Card Index / Listing (Kamil + Alexa + Jat Leng):
 // - Cards are visible above the fold (not buried under promos)
 // - Use-case-led filtering
@@ -23,7 +28,7 @@ export default function Listing() {
   }
 
   const cards = useMemo(() => {
-    let list = active === 'all' ? CARDS : CARDS.filter((c) => c.tags.includes(active))
+    let list = active === 'all' ? LISTED : LISTED.filter((c) => c.tags.includes(active))
     if (sort === 'popular') list = [...list].sort((a, b) => (b.popular ? 1 : 0) - (a.popular ? 1 : 0))
     if (sort === 'income') list = [...list].sort((a, b) => num(a.eligibility.income) - num(b.eligibility.income))
     return list
@@ -38,7 +43,7 @@ export default function Listing() {
           Find the card that fits how you spend
         </h1>
         <p className="mt-3 text-[14px] leading-relaxed text-slatey">
-          Narrow {CARDS.length} cards down to the right two or three. Filter by what
+          Narrow {LISTED.length} cards down to the right two or three. Filter by what
           you spend on, then compare side by side.
         </p>
       </section>
