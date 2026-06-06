@@ -6,6 +6,7 @@ import CardDetail from './pages/CardDetail'
 import Apply from './pages/Apply'
 import Promotions from './pages/Promotions'
 import Compare from './pages/Compare'
+import Guide from './pages/Guide'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/apply/:slug" element={<Apply />} />
           <Route path="/promotions" element={<Promotions />} />
           <Route path="/compare" element={<Compare />} />
+          <Route path="/guide" element={<Guide />} />
         </Route>
       </Routes>
     </>

@@ -61,13 +61,13 @@ export default function Listing() {
       {/* Not sure? router */}
       <section className="px-5 pt-3">
         <Link
-          to="/compare"
+          to="/guide"
           className="flex items-center justify-between rounded-tile border border-royal/20 bg-sky-soft px-4 py-3.5 transition-colors hover:border-royal/40"
         >
           <span className="flex items-center gap-2.5">
             <span>
               <span className="block text-[13px] font-bold text-navy">Not sure which to pick?</span>
-              <span className="block text-[12px] text-slatey">Compare cards by what matters to you</span>
+              <span className="block text-[12px] text-slatey">Answer 3 quick questions to find your fit</span>
             </span>
           </span>
           <Icon.Arrow size={18} className="text-royal" />
@@ -113,7 +113,7 @@ export default function Listing() {
           <p className="mt-1.5 text-[13px] leading-snug text-white/70">
             Three plain-language questions to find your fit — no jargon, no PDFs.
           </p>
-          <Link to="/compare" className="btn-secondary btn-md mt-3 border-white/30 bg-white/10 text-white hover:bg-white/20">
+          <Link to="/guide" className="btn-secondary btn-md mt-3 border-white/30 bg-white/10 text-white hover:bg-white/20">
             Start the 3-question guide
             <Icon.Arrow size={16} />
           </Link>

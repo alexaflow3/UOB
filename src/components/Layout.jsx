@@ -2,7 +2,6 @@ import { useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Icon } from '../lib/icons'
 import CompareBar from './CompareBar'
-import { useCompare } from '../lib/compare'
 import uobLogo from '../assets/uob-logo.png'
 
 // UOB logo — official brand asset (red abacus mark + blue "UOB" wordmark).
@@ -39,7 +38,6 @@ const tabs = [
 ]
 
 function BottomNav() {
-  const { slugs } = useCompare()
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 lg:absolute">
       <div className="phone-shell">
@@ -59,11 +57,6 @@ function BottomNav() {
             >
               <t.icon size={21} />
               {t.label}
-              {t.to === '/compare' && slugs.length > 0 && (
-                <span className="absolute right-3 top-0 grid h-4 min-w-4 place-items-center rounded-full bg-uobred px-1 text-[9px] font-bold text-white">
-                  {slugs.length}
-                </span>
-              )}
             </NavLink>
           ))}
         </div>

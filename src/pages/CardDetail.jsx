@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cardBySlug, CARDS, PROMOS } from '../data/cards'
@@ -17,6 +17,35 @@ const FACTSHEETS = {
 const STORY_IMAGES = import.meta.glob('../assets/story-*.png', { eager: true, import: 'default' })
 const storyImage = (key) => STORY_IMAGES[`../assets/story-${key}.png`]
 
+// "Beyond cashback" lifestyle photos (2.10). Drop perk-<key>.png into assets;
+// any tile without a matching photo keeps its icon + gradient as a fallback.
+const PERK_IMAGES = import.meta.glob('../assets/perk-*.png', { eager: true, import: 'default' })
+const perkImg = (key) => (key ? PERK_IMAGES[`../assets/perk-${key}.png`] : undefined)
+// Map each tile's title to its shared photo key (titles repeat across cards).
+const PERK_KEY = {
+  'SMART$ rebates, automatically': 'rebates',
+  'UOB Deals & SMART$': 'rebates',
+  'SMART$ rebates': 'rebates',
+  'Unlock bonus interest with your UOB One Account': 'interest',
+  'Contactless & mobile wallets': 'mobile-wallet',
+  'Mobile wallets': 'mobile-wallet',
+  'Year-round UOB Deals': 'deals',
+  'UOB Deals': 'deals',
+  'Complimentary insurance': 'womens-insurance',
+  'Instant mobile wallet': 'instant-card',
+  'Mobile-first': 'instant-card',
+  'KrisFlyer integration': 'miles-credit',
+  'Travel privileges': 'travel',
+  'Made to be greener': 'eco',
+  'Airport limousine & lounge': 'limo-lounge',
+  'Travel insurance': 'travel-insurance',
+  'Rich travel insurance': 'travel-insurance',
+  'No categories to track': 'flat-rate',
+  'No minimum spend': 'no-minimum',
+  'Rebates as Lazada credit': 'lazada-credit',
+  'Global lounge access': 'lounge',
+}
+
 // Card Product Page — the main decision-making surface.
 // Implements: at-a-glance summary above the fold (earnings/fees/eligibility/
 // next steps), card-first hero, eligibility upfront, tabbed benefits, sticky
@@ -29,51 +58,68 @@ export default function CardDetail() {
 
   const tabKeys = Object.keys(card.benefitTabs)
   const relatedPromo = PROMOS.find((p) => p.cards.includes(card.slug))
-  const crossSell = CARDS.find((c) => c.slug !== card.slug && c.tier === card.tier) || CARDS.find((c) => c.slug !== card.slug)
+  // 2.13 — up to 2 cross-sell cards shown inline (same tier first, then any),
+  // excluding self and the cards we don't surface in browse.
+  const HIDDEN = ['absolute-cashback-card', 'lazada-uob-card', 'visa-infinite-metal-card']
+  const pool = CARDS.filter((c) => c.slug !== card.slug && !HIDDEN.includes(c.slug))
+  const crossSells = [
+    ...pool.filter((c) => c.tier === card.tier),
+    ...pool.filter((c) => c.tier !== card.tier),
+  ].slice(0, 2)
+
+  // Sticky footer trigger (2.5): the bottom Apply bar only appears once the
+  // hero's own Apply Now button has scrolled out of view.
+  const heroCtaRef = useRef(null)
+  const [showSticky, setShowSticky] = useState(false)
+  useEffect(() => {
+    const el = heroCtaRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowSticky(!entry.isIntersecting),
+      { threshold: 0 },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [slug])
+
+  // Value-prop H1 + card-name eyebrow, whether or not a bespoke `hero` exists.
+  const eyebrow = card.hero?.eyebrow || `${card.name.toUpperCase()} CREDIT CARD`
+  const headline = card.hero?.headline || card.valueProp || card.headline
+  const bullets = card.hero?.body || card.highlights?.slice(0, 3) || []
+
+  // 2.4 — "T&Cs apply" opens the product factsheet (PDF) when the card has one;
+  // otherwise it falls back to the on-page terms section.
+  const factsheet = FACTSHEETS[card.slug]
+  const tcHref = factsheet ? `${import.meta.env.BASE_URL}${factsheet}` : '#terms'
 
   return (
     <div className="pb-20">
-      {/* Soft blue field matching the hero image's own background, fading into
-          the page so the banner blends seamlessly (no rectangular seam). */}
-      <div className="bg-[linear-gradient(180deg,#edf1f9_0%,#eef2f9_30%,#eef2f9_52%,#f5f5f5_100%)]">
+      {/* Hero — dark navy field so the card face pops (2.2). White headline,
+          translucent chips, white benefit bullets, and an in-hero Apply Now. */}
+      <div className="bg-[linear-gradient(180deg,#0a2240_0%,#0a2240_62%,#0c2647_100%)] text-white">
         <div className="px-5 pt-3">
-          <Link to="/" className="inline-flex items-center gap-1 text-[13px] font-semibold text-royal">
+          <Link to="/" className="inline-flex items-center gap-1 text-[13px] font-semibold text-white/80 hover:text-white">
             <Icon.ArrowLeft size={16} /> All cards
           </Link>
         </div>
 
-        {/* Card-first hero. Per head-of-design: the overline + headline always
-            sit at the very top — above the card image — and the spend-category
-            labels are rendered as legible HTML chips (not baked into the art). */}
+        {/* Card-first hero — overline + value-prop headline at the very top. */}
         <section className="px-5 pt-4">
-          {card.hero ? (
-            <>
-              <p className="eyebrow">{card.hero.eyebrow}</p>
-              <h1 className="mt-2 font-display text-[24px] font-bold leading-[1.2] text-navy">{card.hero.headline}</h1>
-            </>
-          ) : (
-            <>
-              <span className="chip w-fit border-royal/20 bg-sky-soft text-royal">{card.tier}</span>
-              <h1 className="mt-2 font-display text-[24px] font-extrabold leading-tight text-navy">{card.name}</h1>
-              <p className="mt-1.5 max-w-[320px] text-[14px] font-medium leading-snug text-ink">{card.valueProp}</p>
-            </>
-          )}
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-sky">{eyebrow}</p>
+          <h1 className="mt-2 font-display text-[24px] font-bold leading-[1.2] text-white">{headline}</h1>
 
-          {/* Card image sits below the headline, floating on its own with a soft
-              drop shadow and no framing container — every card now ships a
-              transparent-edge PNG, so portrait and landscape faces alike float
-              just like the One Card. Width follows the face's orientation. */}
+          {/* Floating card face on the dark field. */}
           <div className={`mx-auto mt-6 ${isPortraitArt(card) ? 'w-[32%] max-w-[116px]' : 'w-[66%] max-w-[262px]'}`}>
             <motion.div initial={{ opacity: 0, y: 18, rotate: -2 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
               <CardArt card={card} bare floating />
             </motion.div>
           </div>
 
-          {/* Legible spend-category labels */}
+          {/* Legible spend-category labels — translucent on the dark field. */}
           {card.heroLabels && (
             <div className="mt-7 flex flex-wrap justify-center gap-2.5">
               {card.heroLabels.map((l) => (
-                <span key={l} className="rounded-full bg-white px-3.5 py-2 text-[12px] font-semibold text-navy shadow-sm ring-1 ring-line">
+                <span key={l} className="rounded-full bg-white/10 px-3.5 py-2 text-[12px] font-semibold text-white ring-1 ring-white/20">
                   {l}
                 </span>
               ))}
@@ -81,19 +127,36 @@ export default function CardDetail() {
           )}
 
           {/* Benefit bullets */}
-          {card.hero && (
-            <>
-              <ul className="mt-9 space-y-4">
-                {card.hero.body.map((b) => (
-                  <li key={b} className="flex gap-3 text-[15.5px] font-semibold leading-snug text-navy">
-                    <Icon.Check size={19} className="mt-0.5 shrink-0 text-royal" />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-              {card.hero.footnote && <p className="mt-4 text-[12px] text-slatey">{card.hero.footnote}</p>}
-            </>
+          {bullets.length > 0 && (
+            <ul className="mt-9 space-y-4">
+              {bullets.map((b) => (
+                <li key={b} className="flex gap-3 text-[15.5px] font-semibold leading-snug text-white">
+                  <Icon.Check size={19} className="mt-0.5 shrink-0 text-sky" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
           )}
+
+          {/* In-hero Apply Now (2.3) — the first, most important CTA. */}
+          <Link
+            ref={heroCtaRef}
+            to={`/apply/${card.slug}`}
+            className="btn-primary btn-lg mt-7 flex w-full bg-uobred hover:bg-uobred-600"
+          >
+            Apply now
+          </Link>
+
+          {/* T&Cs apply → opens the product factsheet PDF (2.4). */}
+          <p className="mt-4 pb-6 text-[12px] text-white/55">
+            <a
+              href={tcHref}
+              {...(factsheet ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              className="underline underline-offset-2 hover:text-white/80"
+            >
+              T&amp;Cs apply
+            </a>
+          </p>
         </section>
       </div>
 
@@ -124,17 +187,18 @@ export default function CardDetail() {
             <hr className="border-t border-line" />
           </div>
           <section className="px-5 pt-8">
-            {card.story?.image && storyImage(card.story.image) && (
-              <img
-                src={storyImage(card.story.image)}
-                alt={`${card.name} — everyday spending categories`}
-                className="mb-5 w-full rounded-card object-cover"
-              />
-            )}
+            {/* 2.8 — headline first, then image, then description. */}
             {card.story && (
               <>
                 <h2 className="font-display text-[20px] font-bold leading-tight text-navy">{card.story.heading}</h2>
-                <div className="mt-4 space-y-3.5 text-[14px] leading-relaxed text-ink">
+                {card.story.image && storyImage(card.story.image) && (
+                  <img
+                    src={storyImage(card.story.image)}
+                    alt={`${card.name} — everyday spending categories`}
+                    className="mt-5 w-full rounded-card object-cover"
+                  />
+                )}
+                <div className="mt-5 space-y-3.5 text-[14px] leading-relaxed text-ink">
                   {card.story.paragraphs.map((p) => <p key={p}>{p}</p>)}
                 </div>
               </>
@@ -240,35 +304,40 @@ export default function CardDetail() {
       {/* Things you should know — disclosures & key terms */}
       <WhatYouShouldKnow items={card.disclosures} />
 
-      {/* Single contextual related card (recommended-product tile) */}
-      {crossSell && (
+      {/* You may also consider — cross-sell cards shown inline (2.13) */}
+      {crossSells.length > 0 && (
         <section className="px-5 pt-10">
-          <h2 className="mb-2 text-[13px] font-bold uppercase tracking-wide text-slatey">You might also consider</h2>
-          <Link to={`/cards/${crossSell.slug}`} className="surface flex items-center gap-3 p-3">
-            <div className="w-[28%]"><CardArt card={crossSell} /></div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-bold text-navy">{crossSell.name}</p>
-              <p className="text-[12px] leading-snug text-slatey">{crossSell.bestFor}</p>
-            </div>
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                // Picking a cross-sell card to compare implies comparing it
-                // against the card you're currently viewing — so auto-add this
-                // page's card too (no-op if already selected).
-                if (!has(crossSell.slug)) add(card.slug)
-                toggle(crossSell.slug)
-              }}
-              className={`btn btn-md border ${has(crossSell.slug) ? 'border-royal bg-sky-soft text-royal' : 'border-line text-slatey'}`}
-            >
-              {has(crossSell.slug) ? <Icon.Check size={16} /> : <Icon.Scales size={16} />}
-            </button>
-          </Link>
+          <h2 className="mb-2 text-[13px] font-bold uppercase tracking-wide text-slatey">You may also consider</h2>
+          <div className="space-y-3">
+            {crossSells.map((cs) => (
+              <Link key={cs.slug} to={`/cards/${cs.slug}`} className="surface flex items-center gap-3 p-3">
+                <div className="w-[28%]"><CardArt card={cs} /></div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[14px] font-bold text-navy">{cs.name}</p>
+                  <p className="text-[12px] leading-snug text-slatey">{cs.bestFor}</p>
+                  <p className="mt-0.5 text-[12px] font-semibold text-royal">{cs.headline}</p>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    // Comparing a cross-sell implies comparing it against the
+                    // card you're viewing — auto-add this page's card too.
+                    if (!has(cs.slug)) add(card.slug)
+                    toggle(cs.slug)
+                  }}
+                  aria-label={`Compare ${cs.name}`}
+                  className={`btn btn-md border ${has(cs.slug) ? 'border-royal bg-sky-soft text-royal' : 'border-line text-slatey'}`}
+                >
+                  {has(cs.slug) ? <Icon.Check size={16} /> : <Icon.Scales size={16} />}
+                </button>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
-      {/* Sticky apply (Alexa #4) — always one click from applying */}
-      <StickyApply card={card} />
+      {/* Sticky apply (Alexa #4) — appears once the hero CTA scrolls away */}
+      <StickyApply card={card} show={showSticky} />
     </div>
   )
 }
@@ -277,9 +346,11 @@ export default function CardDetail() {
 // white body copy with an inline underlined link. Copy capped at 100 chars.
 function PromotionBanner({ banner, href }) {
   return (
-    <section className="mt-10 bg-royal">
-      <div className="flex items-start gap-3.5 px-5 py-4 text-white">
-        <Icon.Coin size={28} className="mt-0.5 shrink-0" />
+    <section className="bg-royal">
+      <div className="flex items-center gap-3.5 px-5 py-4 text-white">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15">
+          <Icon.Spark size={22} />
+        </span>
         <p className="text-[14px] leading-relaxed">
           {banner.text}{' '}
           <Link to={href} className="font-semibold underline underline-offset-2 decoration-1 hover:opacity-90">
@@ -291,27 +362,52 @@ function PromotionBanner({ banner, href }) {
   )
 }
 
+// 2.7 — "Card at a glance" as a mobile accordion. First (most important) row
+// open by default; the rest collapse with a smooth height transition.
 function GlanceTable({ glance }) {
+  const [open, setOpen] = useState(0)
   return (
     <section id="glance" className="scroll-mt-20 px-5 pt-10">
       <h2 className="font-display text-[20px] font-bold leading-tight text-navy">{glance.heading}</h2>
       <div className="mt-4 divide-y divide-line/70 overflow-hidden rounded-card bg-white ring-1 ring-line/70">
-        {glance.rows.map((row) => (
-          <div key={row.label} className="flex gap-4 px-5 py-5">
-            <p className="w-[32%] shrink-0 text-[13px] font-bold text-navy">{row.label}</p>
-            <div className="min-w-0 flex-1">
-              <ul className="space-y-2">
-                {row.points.map((p) => (
-                  <li key={p} className="flex gap-2.5 text-[13.5px] leading-relaxed text-ink">
-                    <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-royal" />
-                    {p}
-                  </li>
-                ))}
-              </ul>
-              {row.note && <p className="mt-2 text-[11.5px] text-slatey">{row.note}</p>}
+        {glance.rows.map((row, i) => {
+          const isOpen = open === i
+          return (
+            <div key={row.label}>
+              <button
+                onClick={() => setOpen(isOpen ? -1 : i)}
+                aria-expanded={isOpen}
+                className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
+              >
+                <span className="text-[14px] font-bold text-navy">{row.label}</span>
+                <Icon.Chevron size={18} className={`shrink-0 text-royal transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-5 pb-5">
+                      <ul className="space-y-2">
+                        {row.points.map((p) => (
+                          <li key={p} className="flex gap-2.5 text-[13.5px] leading-relaxed text-ink">
+                            <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-royal" />
+                            {p}
+                          </li>
+                        ))}
+                      </ul>
+                      {row.note && <p className="mt-2 text-[11.5px] text-slatey">{row.note}</p>}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </section>
   )
@@ -319,25 +415,40 @@ function GlanceTable({ glance }) {
 
 // Secondary benefits — a second tier of value below the headline earn story.
 // Rendered as labelled tiles so each perk reads as its own scannable item.
+// 2.10 — richer treatment than a flat icon grid: each perk gets a gradient
+// "image" band (a stand-in for lifestyle photography) with the icon, then copy.
+const PERK_GRADIENTS = [
+  'linear-gradient(135deg,#0a2240,#1f4f8f)',
+  'linear-gradient(135deg,#0f7a4f,#16a35c)',
+  'linear-gradient(135deg,#7a2150,#b0306b)',
+  'linear-gradient(135deg,#b9842b,#e0aa3e)',
+]
 function SecondaryBenefits({ items, heading }) {
   return (
     <section className="px-5 pt-10">
       <h2 className="font-display text-[20px] font-bold leading-tight text-navy">
         {heading || 'More reasons to love this card'}
       </h2>
-      <div className="mt-4 grid gap-3">
-        {items.map((it) => {
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        {items.map((it, i) => {
           const ItIcon = (it.icon && Icon[it.icon]) || Icon.Spark
+          const photo = perkImg(PERK_KEY[it.title])
           return (
-          <div key={it.title} className="flex gap-3.5 rounded-card bg-white p-4 ring-1 ring-line/70">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-tile bg-sky-soft text-royal">
-              <ItIcon size={18} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[14.5px] font-bold leading-tight text-navy">{it.title}</p>
-              <p className="mt-1 text-[13.5px] leading-relaxed text-ink">{it.body}</p>
+            <div key={it.title} className="overflow-hidden rounded-card bg-white ring-1 ring-line/70">
+              {photo ? (
+                <div className="h-20 overflow-hidden">
+                  <img src={photo} alt={it.title} loading="lazy" className="h-full w-full object-cover" />
+                </div>
+              ) : (
+                <div className="grid h-20 place-items-center" style={{ background: PERK_GRADIENTS[i % PERK_GRADIENTS.length] }}>
+                  <ItIcon size={26} className="text-white/90" />
+                </div>
+              )}
+              <div className="p-3.5">
+                <p className="text-[13.5px] font-bold leading-tight text-navy">{it.title}</p>
+                <p className="mt-1 text-[12.5px] leading-relaxed text-slatey">{it.body}</p>
+              </div>
             </div>
-          </div>
           )
         })}
       </div>
@@ -528,7 +639,7 @@ const DEFAULT_DISCLOSURES = [
 function WhatYouShouldKnow({ items }) {
   const list = items && items.length ? items : DEFAULT_DISCLOSURES
   return (
-    <section className="px-5 pt-10">
+    <section id="terms" className="scroll-mt-16 px-5 pt-10">
       <h2 className="font-display text-[19px] font-bold text-navy">What you should know</h2>
       <ul className="mt-3 space-y-2.5">
         {list.map((d) => (
@@ -612,10 +723,11 @@ function BenefitsSection({ benefits }) {
           transition={{ duration: 0.2 }}
           className="mt-4 space-y-3"
         >
+          {/* 2.9 — benefit value leads (primary), category is a small label. */}
           {tab.tiles.map((tile) => (
             <div key={tile.title} className="rounded-card bg-white p-4 ring-1 ring-line/70">
-              <p className="text-[14px] font-bold text-navy">{tile.title}</p>
-              <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink">{tile.body}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slatey">{tile.title}</p>
+              <p className="mt-1.5 text-[15px] font-bold leading-snug text-navy">{tile.body}</p>
             </div>
           ))}
           {/* How-it-works accordion sits below the cashback tiles (under Fuel) */}
@@ -674,19 +786,35 @@ function Faq({ q, a, defaultOpen }) {
   )
 }
 
-function StickyApply({ card }) {
+// Sticky footer (2.5): card face (left) · two key benefits (centre) · Apply
+// (right). No full card name — the face already identifies the card.
+function StickyApply({ card, show }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 lg:absolute">
-      <div className="phone-shell px-3 pb-3">
-        <div className="flex items-center gap-3 rounded-2xl bg-white/95 p-2.5 pl-4 shadow-sticky ring-1 ring-line backdrop-blur">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-[12px] text-slatey">{card.name}</p>
-            <p className="text-[13px] font-bold text-navy">{card.earn.rate} · {card.fees.waiver}</p>
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed inset-x-0 bottom-0 z-30 lg:absolute"
+        >
+          <div className="phone-shell px-3 pb-3">
+            <div className="flex items-center gap-3 rounded-2xl bg-white/95 p-2.5 pl-3 shadow-sticky ring-1 ring-line backdrop-blur">
+              <div className="flex h-11 w-16 shrink-0 items-center justify-center">
+                <CardArt card={card} className="!aspect-auto h-full" />
+              </div>
+              <div className="min-w-0 flex-1">
+                {/* Same benefit line as the listing tile — reads in full rather
+                    than the terse "Up to 5%". */}
+                <p className="line-clamp-2 text-[12.5px] font-bold leading-tight text-navy">{card.headline}</p>
+              </div>
+              <Link to={`/apply/${card.slug}`} className="btn-primary btn-lg bg-uobred px-7 hover:bg-uobred-600">Apply now</Link>
+            </div>
           </div>
-          <Link to={`/apply/${card.slug}`} className="btn-primary btn-lg bg-uobred px-7 hover:bg-uobred-600">Apply now</Link>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 

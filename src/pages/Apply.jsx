@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cardBySlug, PROMOS } from '../data/cards'
@@ -54,15 +54,16 @@ export default function Apply() {
         </div>
       </header>
 
-      {/* Persistent "why this card" hook — kept visible on every step so the
-          reason to want the card never leaves the screen (head-of-design).
-          The category cashback tiles live inside this strip. */}
-      <CardHook card={card} />
+      {/* Persistent reward carousel — stays mounted (and rolling) across every
+          step so the reason to want the card never leaves the screen. */}
+      <div className="px-5 pt-5">
+        <RewardCarousel card={card} />
+      </div>
 
-      <div className="px-5 py-6">
+      <div className="px-5 pb-6 pt-5">
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
-            {step === 0 && <StepEligibility card={card} onNext={() => setStep(1)} />}
+            {step === 0 && <StepEligibility card={card} onSingpass={() => setStep(1)} onManual={() => setStep(2)} />}
             {step === 1 && <StepMethod card={card} onBack={() => setStep(0)} onNext={() => setStep(2)} />}
             {step === 2 && <StepDetails onBack={() => setStep(1)} onNext={() => setStep(3)} />}
             {step === 3 && <StepReview card={card} onBack={() => setStep(2)} />}
@@ -152,11 +153,13 @@ function CardHook({ card }) {
     ? 'rewards'
     : 'cashback'
   return (
-    <section className="bg-navy px-5 py-4 text-white">
-      <h2 className="font-display text-[20px] font-extrabold leading-tight text-white">
+    // 4.2 — cap the blue hook at ~30% of the viewport so the form stays in
+    // reach; it scrolls internally if a card has lots of tiles + a gift.
+    <section className="no-scrollbar max-h-[30vh] overflow-y-auto bg-navy px-5 py-3.5 text-white">
+      <h2 className="font-display text-[18px] font-extrabold leading-tight text-white">
         Enjoy more on everything you buy
       </h2>
-      <p className="mt-1.5 text-[13px] leading-snug text-white/70">
+      <p className="mt-1 text-[12.5px] leading-snug text-white/70">
         Earn {noun} every time you spend on the things you love.
       </p>
 
@@ -247,53 +250,123 @@ function CardHook({ card }) {
   )
 }
 
-/* ---------- Step 1: Qualify before the form ---------- */
-function StepEligibility({ card, onNext }) {
-  const checks = [
-    { label: `You earn at least ${card.eligibility.income} a year`, sub: 'Annual income before CPF' },
-    { label: `You are aged ${card.eligibility.age} or above`, sub: null },
-    { label: `You are a ${card.eligibility.residency}`, sub: 'Foreigners need a different form' },
+// Auto-rolling reward carousel — takes the old blue-header content (the card's
+// category earn points + welcome gift) and rolls through it one point at a time,
+// keeping the reward-hook banner styling (white card · 64px square · text).
+function RewardCarousel({ card }) {
+  const promo = PROMOS.find((p) => p.cards.includes(card.slug))
+  const gift = promo && rewardImg(promo.rewardImage)
+  const badge = promo ? REWARD_BADGE[promo.rewardImage] || REWARD_BADGE.cash : null
+  const tiles = (card.applyTiles || []).filter((t) => (t.brands || []).some((b) => brandImg(b)))
+  const slides = [
+    ...(promo ? [{ key: 'gift' }] : []),
+    ...tiles.map((t, idx) => ({ key: `t${idx}`, tile: t })),
   ]
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    if (slides.length <= 1) return undefined
+    const id = setInterval(() => setI((p) => (p + 1) % slides.length), 2800)
+    return () => clearInterval(id)
+  }, [slides.length])
+
+  // No category tiles and no gift — keep a single static point.
+  if (slides.length === 0) {
+    return (
+      <section className="overflow-hidden rounded-card bg-white ring-1 ring-line/70">
+        <div className="flex items-center gap-3.5 p-3.5">
+          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-tile" style={{ background: '#0a2240' }}>
+            <span className="text-[28px]">🎁</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-royal">What you’ll get</p>
+            <p className="mt-0.5 text-[15px] font-extrabold leading-tight text-navy">{card.headline}</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  const slide = slides[Math.min(i, slides.length - 1)]
+  const isGift = slide.key === 'gift'
+
+  return (
+    <section className="overflow-hidden rounded-card bg-white ring-1 ring-line/70">
+      <div className="relative h-[88px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={slide.key}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.35 }}
+            className="absolute inset-0 flex items-center gap-3.5 p-3.5"
+          >
+            {isGift ? (
+              <>
+                <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-tile" style={{ background: badge.bg }}>
+                  {gift ? <img src={gift} alt={promo.reward} className="h-full w-full object-cover" /> : <span className="text-[30px]">{badge.emoji}</span>}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-royal">Your welcome gift</p>
+                  <p className="mt-0.5 text-[15px] font-extrabold leading-tight text-navy">
+                    {promo.reward}{promo.worth ? ` — worth ${promo.worth}` : ''}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid h-16 w-16 shrink-0 place-items-center rounded-tile bg-mist px-2">
+                  <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
+                    {slide.tile.brands.map((b) => {
+                      const logo = brandImg(b)
+                      return logo ? (
+                        <img key={b} src={logo} alt={BRAND_LABEL[b] || b} className="h-5 w-auto max-w-[44px] object-contain" />
+                      ) : null
+                    })}
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-royal">{slide.tile.category}</p>
+                  <p className="mt-0.5 text-[15px] font-extrabold leading-tight text-navy">{slide.tile.value} {slide.tile.metric}</p>
+                </div>
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      {slides.length > 1 && (
+        <div className="flex justify-center gap-1.5 pb-2.5">
+          {slides.map((s, d) => (
+            <span key={s.key} className={`h-1.5 rounded-full transition-all ${d === i ? 'w-4 bg-royal' : 'w-1.5 bg-line'}`} />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+/* ---------- Step 1: Pre-step gate (4.3) ----------
+   Conversion-led order: (1) the reward you're getting, (2) which card,
+   (3) what to have ready, (4) two CTAs — Singpass and manual. */
+function StepEligibility({ card, onSingpass, onManual }) {
   const docs = ['NRIC (front & back)', 'Latest income proof or CPF statement', 'Singpass login']
-  const [ok, setOk] = useState([false, false, false])
-  const allOk = ok.every(Boolean)
 
   return (
     <div className="space-y-5">
-      <div className="text-center">
-        {/* Portrait faces (One, EVOL) fill this width vertically; landscape
-            faces read much shorter, so give them a wider column to match. */}
-        <div className={`mx-auto ${isPortraitArt(card) ? 'w-[22%] max-w-[84px]' : 'w-[42%] max-w-[150px]'}`}>
-          <CardArt card={card} bare />
-        </div>
-        <h1 className="mt-4 font-display text-[22px] font-extrabold leading-tight text-navy">Apply for the {card.name.replace('UOB ', '')}</h1>
-        <p className="mt-1.5 text-[14px] text-slatey">Takes about 5 minutes. Let's first check you qualify.</p>
-      </div>
-
-      <section className="surface p-5">
-        <h2 className="text-[13px] font-bold uppercase tracking-wide text-slatey">Confirm you qualify</h2>
-        <div className="mt-4 space-y-3">
-          {checks.map((c, i) => (
-            <button
-              key={i}
-              onClick={() => setOk((cur) => cur.map((v, idx) => (idx === i ? !v : v)))}
-              className={`flex w-full items-start gap-3 rounded-tile border p-3.5 text-left transition-colors ${ok[i] ? 'border-royal bg-sky-soft' : 'border-line bg-white'}`}
-            >
-              <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 ${ok[i] ? 'border-royal bg-royal text-white' : 'border-line'}`}>
-                {ok[i] && <Icon.Check size={13} />}
-              </span>
-              <span>
-                <span className="block text-[14px] font-semibold text-navy">{c.label}</span>
-                {c.sub && <span className="block text-[12px] text-slatey">{c.sub}</span>}
-              </span>
-            </button>
-          ))}
+      {/* Card identity (the persistent reward carousel sits above, in Apply) */}
+      <section className="flex items-center gap-3.5 rounded-card bg-sky-soft p-3.5 ring-1 ring-royal/15">
+        <div className="w-[34%] max-w-[120px] shrink-0"><CardArt card={card} /></div>
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-royal">You’re applying for</p>
+          <h1 className="mt-0.5 font-display text-[16px] font-extrabold leading-tight text-navy">{card.name}</h1>
+          <p className="mt-0.5 text-[12.5px] leading-snug text-slatey">{card.headline}</p>
         </div>
       </section>
 
+      {/* 3. Have these ready */}
       <section className="rounded-card bg-white p-5 ring-1 ring-line/70">
         <h2 className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wide text-slatey">
-          <Icon.Doc size={16} /> Have these ready
+          <Icon.Doc size={16} /> To apply, you’ll need
         </h2>
         <ul className="mt-3 space-y-2.5">
           {docs.map((d) => (
@@ -302,13 +375,21 @@ function StepEligibility({ card, onNext }) {
             </li>
           ))}
         </ul>
+        <p className="mt-3 border-t border-line/70 pt-3 text-[12px] leading-snug text-slatey">
+          Eligibility: {card.eligibility.residency} aged {card.eligibility.age}+, earning at least {card.eligibility.income}/year.
+        </p>
       </section>
 
-      <button disabled={!allOk} onClick={onNext} className="btn-primary btn-lg w-full disabled:opacity-50">
-        {allOk ? 'Continue' : 'Confirm all three to continue'}
-        {allOk && <Icon.Arrow size={18} />}
-      </button>
-      <p className="text-center text-[12px] text-slatey">Next: choose how you’d like to apply.</p>
+      {/* 4. Two CTAs — Singpass (official red) + manual */}
+      <div className="space-y-3">
+        <button onClick={onSingpass} className="btn btn-lg w-full bg-[#f4333d] text-white hover:bg-[#d92a34]">
+          <Icon.Lock size={18} /> Retrieve my info with Singpass
+        </button>
+        <button onClick={onManual} className="btn-secondary btn-lg w-full">
+          Fill in the form myself
+        </button>
+        <p className="text-center text-[12px] text-slatey">Singpass is fastest — we pre-fill your details from Myinfo.</p>
+      </div>
     </div>
   )
 }

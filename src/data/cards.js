@@ -126,7 +126,7 @@ export const CARDS = [
     secondaryHeading: 'Beyond cashback',
     secondaryBenefits: [
       { icon: 'Coin', title: 'SMART$ rebates, automatically', body: 'Earn extra SMART$ rebates at 1,000+ participating merchants island-wide — no registration, redeemed straight off your spend.' },
-      { icon: 'Wallet', title: 'Pair with the UOB One Account', body: 'Use the card to help unlock bonus interest on a linked UOB One Account — your everyday spend works twice.' },
+      { icon: 'Wallet', title: 'Unlock bonus interest with your UOB One Account', body: 'Use the card to help unlock up to 3.4% p.a. on a linked UOB One Account — your everyday spend works twice.' },
       { icon: 'Phone', title: 'Contactless & mobile wallets', body: 'Add it to Apple Pay, Google Pay or Samsung Pay and tap to pay everywhere Visa/Mastercard is accepted.' },
       { icon: 'Spark', title: 'Year-round UOB Deals', body: 'Limited-time cardmember offers on dining, shopping and travel, refreshed throughout the year in UOB TMRW.' },
     ],
@@ -146,7 +146,7 @@ export const CARDS = [
     },
     linkedProduct: {
       eyebrow: 'Linked account',
-      heading: 'Earn higher interest with a UOB One Account',
+      heading: 'Earn up to 3.4% p.a. by linking your UOB One Account',
       body: 'Pair this card with a UOB One Account and earn up to 3.4% p.a. interest when you:',
       points: ['spend a min. S$500 each month on your UOB One card, and', 'credit your salary or make 3 GIRO transactions monthly'],
       cta: 'Get the details',
@@ -292,7 +292,7 @@ export const CARDS = [
     },
     linkedProduct: {
       eyebrow: 'Linked account',
-      heading: 'Earn higher interest with a UOB One Account',
+      heading: 'Earn up to 3.4% p.a. by linking your UOB One Account',
       body: 'Pair this card with a UOB One Account and earn up to 3.4% p.a. interest when you:',
       points: ['spend a min. S$500 each month on your UOB card, and', 'credit your salary or make 3 GIRO transactions monthly'],
       cta: 'Get the details',
@@ -420,7 +420,7 @@ export const CARDS = [
     },
     linkedProduct: {
       eyebrow: 'Linked account',
-      heading: 'Earn higher interest with a UOB One Account',
+      heading: 'Earn up to 3.4% p.a. by linking your UOB One Account',
       body: 'Pair this card with a UOB One Account and earn up to 3.4% p.a. interest when you:',
       points: ['spend a min. S$500 each month on your UOB card, and', 'credit your salary or make 3 GIRO transactions monthly'],
       cta: 'Get the details',
@@ -550,7 +550,7 @@ export const CARDS = [
     },
     linkedProduct: {
       eyebrow: 'Linked account',
-      heading: 'Earn higher interest with a UOB One Account',
+      heading: 'Earn up to 3.4% p.a. by linking your UOB One Account',
       body: 'Pair this card with a UOB One Account and earn up to 3.4% p.a. interest when you:',
       points: ['spend a min. S$500 each month on your UOB card, and', 'credit your salary or make 3 GIRO transactions monthly'],
       cta: 'Get the details',
@@ -677,7 +677,7 @@ export const CARDS = [
     },
     linkedProduct: {
       eyebrow: 'Linked account',
-      heading: 'Earn higher interest with a UOB One Account',
+      heading: 'Earn up to 3.4% p.a. by linking your UOB One Account',
       body: 'Pair this card with a UOB One Account and earn up to 3.4% p.a. interest when you:',
       points: ['spend a min. S$500 each month on your UOB card, and', 'credit your salary or make 3 GIRO transactions monthly'],
       cta: 'Get the details',
@@ -805,7 +805,7 @@ export const CARDS = [
     },
     linkedProduct: {
       eyebrow: 'Linked account',
-      heading: 'Earn higher interest with a UOB One Account',
+      heading: 'Earn up to 3.4% p.a. by linking your UOB One Account',
       body: 'Pair this card with a UOB One Account and earn up to 3.4% p.a. interest when you:',
       points: ['spend a min. S$500 each month on your UOB card, and', 'credit your salary or make 3 GIRO transactions monthly'],
       cta: 'Get the details',
@@ -1021,7 +1021,7 @@ export const CARDS = [
     secondaryHeading: 'Beyond the rebates',
     secondaryBenefits: [
       { icon: 'Spark', title: 'Rebates as Lazada credit', body: 'Your rebates return as Lazada Gift Card credit each month — ready to spend on your next order.' },
-      { icon: 'Coin', title: 'Pair with UOB One Account', body: 'Link a UOB One Account to earn up to 3.4% p.a. interest on your savings alongside your rebates.' },
+      { icon: 'Coin', title: 'Unlock bonus interest with your UOB One Account', body: 'Link a UOB One Account to earn up to 3.4% p.a. interest on your savings alongside your rebates.' },
       { icon: 'Phone', title: 'Contactless & mobile wallets', body: 'Add it to Apple Pay, Google Pay or Samsung Pay and tap to pay everywhere Visa is accepted.' },
     ],
     disclosures: [
