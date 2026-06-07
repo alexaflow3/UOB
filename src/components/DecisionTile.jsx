@@ -33,11 +33,12 @@ export default function DecisionTile({ card, index = 0 }) {
       transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
       className="surface overflow-hidden"
     >
-      {/* Popular — full-width banner across the top, gold-foil glimmer. */}
+      {/* Popular — full-width banner across the top, UOB "Confident" orange
+          glimmer (bright highlight band sweeping the centre). */}
       {card.popular && (
         <div
-          className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#4a3500]"
-          style={{ background: 'linear-gradient(105deg,#a9781f 0%,#e3c25e 28%,#fbf1cd 50%,#e3c25e 72%,#a9781f 100%)' }}
+          className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#6e3208]"
+          style={{ background: 'linear-gradient(105deg,#F09252 0%,#FFA666 30%,#FFC499 50%,#FFA666 70%,#F09252 100%)' }}
         >
           <Icon.Spark size={12} /> Popular
         </div>
