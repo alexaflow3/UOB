@@ -48,8 +48,8 @@ export default function DecisionTile({ card, index = 0 }) {
             <CardArt card={card} className="!aspect-[1.586/1] !w-full" />
           </div>
           <div className="min-w-0 flex-1">
-            {/* Category label sits directly above the card name. */}
-            <p className="eyebrow">{label}</p>
+            {/* Category label (quiet grey) sits directly above the card name. */}
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">{label}</p>
             <h3 className="mt-1 font-display text-[16px] font-bold leading-tight text-navy">{card.name}</h3>
             <p className="mt-1 text-[13px] font-semibold leading-snug text-royal">{card.headline}</p>
           </div>
@@ -57,7 +57,7 @@ export default function DecisionTile({ card, index = 0 }) {
 
         {/* Key value props — the bullet detail other banks put on grid cards. */}
         {bullets.length > 0 && (
-          <ul className="mt-3.5 space-y-1.5">
+          <ul className="mt-3 space-y-1">
             {bullets.map((b) => (
               <li key={b} className="flex gap-2 text-[12.5px] leading-snug text-ink">
                 <Icon.Check size={15} className="mt-0.5 shrink-0 text-royal" />
@@ -67,7 +67,7 @@ export default function DecisionTile({ card, index = 0 }) {
           </ul>
         )}
 
-        <span className="mt-3.5 inline-flex items-center gap-1 text-[13px] font-bold text-royal">
+        <span className="mt-3 inline-flex items-center gap-1 text-[13px] font-bold text-royal">
           Find out more <Icon.Arrow size={14} />
         </span>
       </Link>
