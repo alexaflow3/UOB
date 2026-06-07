@@ -384,15 +384,18 @@ function StepEligibility({ card, onSingpass, onManual }) {
         </p>
       </section>
 
-      {/* 4. Two CTAs — Singpass (official red) + manual */}
+      {/* 4. Two CTAs — Singpass (everyone) + UOB internet banking (existing
+          customers). No manual route. */}
       <div className="space-y-3">
         <button onClick={onSingpass} className="btn btn-lg w-full bg-[#f4333d] text-white hover:bg-[#d92a34]">
-          <Icon.Lock size={18} /> Retrieve my info with Singpass
+          <Icon.Lock size={18} /> Apply with Singpass
         </button>
-        <button onClick={onManual} className="btn-secondary btn-lg w-full">
-          Fill in the form myself
+        <button onClick={onManual} className="btn btn-lg w-full bg-royal text-white hover:bg-royal-700">
+          <Icon.User size={18} /> Apply with UOB internet banking
         </button>
-        <p className="text-center text-[12px] text-slatey">Singpass is fastest — we pre-fill your details from Myinfo.</p>
+        <p className="text-center text-[12px] leading-snug text-slatey">
+          New to UOB? Singpass pre-fills your details from Myinfo. Already bank with UOB? Log in with internet banking.
+        </p>
       </div>
     </div>
   )
