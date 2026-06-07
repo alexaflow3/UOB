@@ -4,12 +4,27 @@ import CardArt from './CardArt'
 import { Icon } from '../lib/icons'
 import { useCompare } from '../lib/compare'
 
-// Decision tile (Alexa #1 + Kamil 1.2/1.3): exactly three typographic levels —
-// card name (primary), a single benefit-led descriptor, and the key reward.
-// No "Best for" label, no repeated min-income row.
+// Simple category label above the card (client: "CASHBACK / TRAVEL & MILES").
+// Eyebrow CSS uppercases, so casing here is just for readability.
+const TIER_LABEL = {
+  Cashback: 'Cashback',
+  Rewards: 'Rewards',
+  Travel: 'Travel & Miles',
+}
+// A couple of cards read better with a bespoke label.
+const SLUG_LABEL = {
+  'lazada-uob-card': 'Cashback & Rebates',
+  'evol-card': 'Cashback',
+}
+
+// Card-led decision tile, modelled on how SG banks present their grid cards
+// (Citi/OCBC/DBS): category label → card + name → value prop → key value-prop
+// bullets ("the 3rd points") → a prominent "find out more" → Apply.
 export default function DecisionTile({ card, index = 0 }) {
   const { has, toggle } = useCompare()
   const selected = has(card.slug)
+  const label = SLUG_LABEL[card.slug] || TIER_LABEL[card.tier] || card.tier
+  const bullets = (card.hero?.body || card.highlights || []).slice(0, 3)
 
   return (
     <motion.article
@@ -18,11 +33,13 @@ export default function DecisionTile({ card, index = 0 }) {
       transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
       className="surface overflow-hidden"
     >
-      <Link to={`/cards/${card.slug}`} className="block">
-        <div className="flex gap-4 p-4">
-          <div className="w-[42%] shrink-0">
-            {/* Force a uniform landscape box so portrait & landscape faces read
-                at the same height; portrait cards sit centered within it. */}
+      {/* The whole upper area is the "more" affordance — taps through to the
+          full card detail page. */}
+      <Link to={`/cards/${card.slug}`} className="block p-4">
+        <p className="eyebrow">{label}</p>
+
+        <div className="mt-2 flex gap-4">
+          <div className="w-[40%] shrink-0">
             <CardArt card={card} className="!aspect-[1.586/1] !w-full" />
             {card.popular && (
               <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold">
@@ -31,38 +48,41 @@ export default function DecisionTile({ card, index = 0 }) {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            {/* 1. Card name — primary */}
-            <h3 className="font-display text-[17px] font-bold leading-tight text-navy">{card.name}</h3>
-            {/* 2. Single benefit-led descriptor */}
-            <p className="mt-1.5 text-[13px] leading-snug text-slatey">For {lowerFirst(card.bestFor)}</p>
+            {/* Name, then the value prop directly below it. */}
+            <h3 className="font-display text-[16px] font-bold leading-tight text-navy">{card.name}</h3>
+            <p className="mt-1 text-[13px] font-semibold leading-snug text-royal">{card.headline}</p>
           </div>
         </div>
+
+        {/* Key value props — the bullet detail other banks put on grid cards. */}
+        {bullets.length > 0 && (
+          <ul className="mt-3.5 space-y-1.5">
+            {bullets.map((b) => (
+              <li key={b} className="flex gap-2 text-[12.5px] leading-snug text-ink">
+                <Icon.Check size={15} className="mt-0.5 shrink-0 text-royal" />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <span className="mt-3.5 inline-flex items-center gap-1 text-[13px] font-bold text-royal">
+          Find out more <Icon.Arrow size={14} />
+        </span>
       </Link>
 
-      <div className="flex items-center justify-between gap-3 border-t border-line/70 px-4 py-3">
-        {/* 3. Key reward — sits beside the CTAs */}
-        <span className="min-w-0 flex-1 text-[12.5px] font-semibold leading-tight text-royal">{card.headline}</span>
-        <div className="flex shrink-0 items-center gap-2">
-          <button
-            onClick={() => toggle(card.slug)}
-            className={`btn btn-md border ${selected ? 'border-royal bg-royal text-white' : 'border-royal text-royal hover:bg-sky-soft'}`}
-          >
-            {selected ? <><Icon.Check size={15} /> Added</> : 'Compare'}
-          </button>
-          <Link to={`/apply/${card.slug}`} className="btn btn-md bg-uobred text-white hover:bg-uobred-600">
-            Apply
-          </Link>
-        </div>
+      {/* CTAs — Apply is primary; Compare is a quieter secondary action. */}
+      <div className="flex items-center gap-2.5 border-t border-line/70 px-4 py-3">
+        <button
+          onClick={() => toggle(card.slug)}
+          className={`btn btn-md shrink-0 border ${selected ? 'border-royal bg-royal text-white' : 'border-royal text-royal hover:bg-sky-soft'}`}
+        >
+          {selected ? <><Icon.Check size={15} /> Added</> : 'Compare'}
+        </button>
+        <Link to={`/apply/${card.slug}`} className="btn btn-md flex-1 bg-uobred text-white hover:bg-uobred-600">
+          Apply now
+        </Link>
       </div>
     </motion.article>
   )
-}
-
-// Lowercase the first letter so "Everyday spenders…" reads as "For everyday
-// spenders…" — but keep proper nouns/brands (KrisFlyer, PRVI) that carry an
-// internal or all-caps letter.
-const lowerFirst = (s = '') => {
-  const first = s.split(' ')[0]
-  if (/[A-Z].*[A-Z]/.test(first)) return s
-  return s.charAt(0).toLowerCase() + s.slice(1)
 }
