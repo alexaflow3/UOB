@@ -116,12 +116,14 @@ TERMS = [
 DISCLAIMER = ("This is an illustrative sample for Project Simple. Figures are representative of the "
               "UOB One Card and are not a substitute for the official terms.")
 
-# ---- Geometry: a clean full-bleed white page --------------------------------
-PAGE_W, PAGE_H = A4
+# ---- Geometry: a narrow "mobile web article" page (not A4) ------------------
+# Sized between desktop and mobile so it fits-to-width comfortably on a phone
+# (large type, single column) while still reading fine on desktop.
+PAGE_W, PAGE_H = (470, 770)
 PANEL_M = 0               # full bleed — the page fills the sheet edge to edge
-INNER = 16 * mm           # content margin from the page edge
-HEADER_H = 19 * mm        # logo + eyebrow zone at the top of the page
-FOOTER_H = 13 * mm        # footer zone at the bottom of the page
+INNER = 30                # content margin from the page edge (points)
+HEADER_H = 46             # logo + eyebrow zone at the top of the page
+FOOTER_H = 30             # footer zone at the bottom of the page
 
 PANEL_X = PANEL_M
 PANEL_Y = PANEL_M
@@ -139,40 +141,40 @@ CONTENT_W = FRAME_W
 
 # ---- Styles -----------------------------------------------------------------
 styles = {
-    "eyebrow": ParagraphStyle("eyebrow", fontName="Helvetica-Bold", fontSize=8.5,
-                              textColor=ROYAL, leading=11, spaceAfter=3),
-    "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=18, textColor=NAVY,
-                         leading=22, spaceAfter=4),
-    "label": ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=8,
-                            textColor=SLATEY, leading=11, spaceAfter=2),
-    "body": ParagraphStyle("body", fontName="Helvetica", fontSize=10, textColor=INK,
-                           leading=15),
-    "know_head": ParagraphStyle("know_head", fontName="Helvetica-Bold", fontSize=8.5,
-                                textColor=ROYAL, leading=12, spaceAfter=5),
-    "know_item": ParagraphStyle("know_item", fontName="Helvetica", fontSize=9.5,
-                                textColor=INK, leading=14, leftIndent=12,
-                                bulletIndent=0),
+    "eyebrow": ParagraphStyle("eyebrow", fontName="Helvetica-Bold", fontSize=11,
+                              textColor=ROYAL, leading=14, spaceAfter=4),
+    "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=25, textColor=NAVY,
+                         leading=30, spaceAfter=6),
+    "label": ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=10.5,
+                            textColor=SLATEY, leading=14, spaceAfter=3),
+    "body": ParagraphStyle("body", fontName="Helvetica", fontSize=14.5, textColor=INK,
+                           leading=21),
+    "know_head": ParagraphStyle("know_head", fontName="Helvetica-Bold", fontSize=11,
+                                textColor=ROYAL, leading=15, spaceAfter=7),
+    "know_item": ParagraphStyle("know_item", fontName="Helvetica", fontSize=13.5,
+                                textColor=INK, leading=20, leftIndent=18,
+                                bulletIndent=0, spaceAfter=3),
     "contents_head": ParagraphStyle("contents_head", fontName="Helvetica-Bold",
-                                    fontSize=8.5, textColor=SLATEY, leading=12,
-                                    spaceAfter=5),
-    "contents_item": ParagraphStyle("contents_item", fontName="Helvetica", fontSize=10,
-                                    textColor=ROYAL, leading=18),
-    "h2": ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=13, textColor=NAVY,
-                         leading=16, spaceBefore=2, spaceAfter=8),
-    "cell_key": ParagraphStyle("cell_key", fontName="Helvetica-Bold", fontSize=9.5,
-                               textColor=NAVY, leading=13),
-    "cell_val": ParagraphStyle("cell_val", fontName="Helvetica", fontSize=9.5,
-                               textColor=INK, leading=13),
-    "cell_head": ParagraphStyle("cell_head", fontName="Helvetica-Bold", fontSize=8,
-                                textColor=SLATEY, leading=11),
-    "note": ParagraphStyle("note", fontName="Helvetica", fontSize=8.5, textColor=SLATEY,
-                           leading=12, spaceBefore=6),
-    "term_h": ParagraphStyle("term_h", fontName="Helvetica-Bold", fontSize=10,
-                             textColor=NAVY, leading=14, spaceAfter=2),
-    "term_p": ParagraphStyle("term_p", fontName="Helvetica", fontSize=9.5,
-                             textColor=SLATEY, leading=13, spaceAfter=6),
-    "disclaimer": ParagraphStyle("disclaimer", fontName="Helvetica-Oblique", fontSize=8,
-                                 textColor=SLATEY, leading=12),
+                                    fontSize=11, textColor=SLATEY, leading=15,
+                                    spaceAfter=6),
+    "contents_item": ParagraphStyle("contents_item", fontName="Helvetica", fontSize=14.5,
+                                    textColor=ROYAL, leading=26),
+    "h2": ParagraphStyle("h2", fontName="Helvetica-Bold", fontSize=19, textColor=NAVY,
+                         leading=24, spaceBefore=2, spaceAfter=11),
+    "cell_key": ParagraphStyle("cell_key", fontName="Helvetica-Bold", fontSize=13,
+                               textColor=NAVY, leading=18),
+    "cell_val": ParagraphStyle("cell_val", fontName="Helvetica", fontSize=13,
+                               textColor=INK, leading=18),
+    "cell_head": ParagraphStyle("cell_head", fontName="Helvetica-Bold", fontSize=10.5,
+                                textColor=SLATEY, leading=14),
+    "note": ParagraphStyle("note", fontName="Helvetica", fontSize=12, textColor=SLATEY,
+                           leading=17, spaceBefore=8),
+    "term_h": ParagraphStyle("term_h", fontName="Helvetica-Bold", fontSize=14,
+                             textColor=NAVY, leading=19, spaceAfter=3),
+    "term_p": ParagraphStyle("term_p", fontName="Helvetica", fontSize=12.5,
+                             textColor=SLATEY, leading=18, spaceAfter=9),
+    "disclaimer": ParagraphStyle("disclaimer", fontName="Helvetica-Oblique", fontSize=11,
+                                 textColor=SLATEY, leading=16),
 }
 
 
@@ -187,10 +189,10 @@ def two_col_table(rows):
         ("LINEAFTER", (0, 0), (0, -1), 0.5, LINE_70),
         ("ROUNDEDCORNERS", [7, 7, 7, 7]),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-        ("TOPPADDING", (0, 0), (-1, -1), 5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 13),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 13),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
     ]))
     return t
 
@@ -207,10 +209,10 @@ def cashback_table():
         ("BOX", (0, 0), (-1, -1), 0.6, LINE),
         ("ROUNDEDCORNERS", [7, 7, 7, 7]),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 10),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-        ("TOPPADDING", (0, 0), (-1, -1), 5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 13),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 13),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
     ]))
     return t
 
@@ -253,15 +255,15 @@ def header_footer(canvas, doc):
     canvas.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
 
     # Header: real UOB logo (left) + muted file meta (right)
-    logo_h = 6.6 * mm
+    logo_h = 17
     logo_w = logo_h * (1280.0 / 359.0)
-    logo_top_pad = 8.5 * mm
+    logo_top_pad = 15
     logo_y = PAGE_H - logo_top_pad - logo_h
     canvas.drawImage(ImageReader(LOGO), FRAME_X, logo_y, width=logo_w, height=logo_h,
                      mask="auto")
 
-    meta_y = logo_y + logo_h / 2 - 2.6
-    canvas.setFont("Helvetica", 8)
+    meta_y = logo_y + logo_h / 2 - 3.2
+    canvas.setFont("Helvetica", 9.5)
     canvas.setFillColor(colors.HexColor("#9aa3b0"))
     canvas.drawRightString(RIGHT_X, meta_y, f"Updated {UPDATED}")
 
@@ -274,10 +276,10 @@ def header_footer(canvas, doc):
     # Footer: hairline + filename / page meta
     foot_div_y = FRAME_BOTTOM - 6
     canvas.line(FRAME_X, foot_div_y, RIGHT_X, foot_div_y)
-    canvas.setFont("Helvetica", 7.5)
+    canvas.setFont("Helvetica", 9)
     canvas.setFillColor(SLATEY)
-    canvas.drawString(FRAME_X, foot_div_y - 9, FILE_NAME)
-    canvas.drawRightString(RIGHT_X, foot_div_y - 9, f"Page {doc.page}")
+    canvas.drawString(FRAME_X, foot_div_y - 11, FILE_NAME)
+    canvas.drawRightString(RIGHT_X, foot_div_y - 11, f"Page {doc.page}")
 
     canvas.restoreState()
 
@@ -285,7 +287,7 @@ def header_footer(canvas, doc):
 def build():
     out = os.path.join(HERE, "public", "uob-one-card-product-factsheet.pdf")
     doc = BaseDocTemplate(
-        out, pagesize=A4,
+        out, pagesize=(PAGE_W, PAGE_H),
         leftMargin=FRAME_X, rightMargin=PANEL_X,
         topMargin=PANEL_M, bottomMargin=PANEL_M,
         title="UOB One Card — Product factsheet",
