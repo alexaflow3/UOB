@@ -33,23 +33,24 @@ export default function DecisionTile({ card, index = 0 }) {
       transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
       className="surface overflow-hidden"
     >
+      {/* Popular — a full-width banner across the top of the tile. */}
+      {card.popular && (
+        <div className="flex items-center gap-1.5 bg-gold-soft px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+          <Icon.Spark size={12} /> Popular
+        </div>
+      )}
+
       {/* The whole upper area is the "more" affordance — taps through to the
           full card detail page. */}
       <Link to={`/cards/${card.slug}`} className="block p-4">
-        <p className="eyebrow">{label}</p>
-
-        <div className="mt-2 flex gap-4">
+        <div className="flex gap-4">
           <div className="w-[40%] shrink-0">
             <CardArt card={card} className="!aspect-[1.586/1] !w-full" />
-            {card.popular && (
-              <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold">
-                <Icon.Spark size={11} /> Popular
-              </span>
-            )}
           </div>
           <div className="min-w-0 flex-1">
-            {/* Name, then the value prop directly below it. */}
-            <h3 className="font-display text-[16px] font-bold leading-tight text-navy">{card.name}</h3>
+            {/* Category label sits directly above the card name. */}
+            <p className="eyebrow">{label}</p>
+            <h3 className="mt-1 font-display text-[16px] font-bold leading-tight text-navy">{card.name}</h3>
             <p className="mt-1 text-[13px] font-semibold leading-snug text-royal">{card.headline}</p>
           </div>
         </div>
