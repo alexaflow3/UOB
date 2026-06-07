@@ -33,9 +33,12 @@ export default function DecisionTile({ card, index = 0 }) {
       transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
       className="surface overflow-hidden"
     >
-      {/* Popular — a full-width banner across the top of the tile. */}
+      {/* Popular — full-width banner across the top, UOB blue gradient. */}
       {card.popular && (
-        <div className="flex items-center gap-1.5 bg-gold-soft px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+        <div
+          className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white"
+          style={{ background: 'linear-gradient(120deg,#0a73d6,#0a2a6b)' }}
+        >
           <Icon.Spark size={12} /> Popular
         </div>
       )}
@@ -57,7 +60,7 @@ export default function DecisionTile({ card, index = 0 }) {
 
         {/* Key value props — the bullet detail other banks put on grid cards. */}
         {bullets.length > 0 && (
-          <ul className="mt-3 space-y-1">
+          <ul className="mt-5 space-y-1">
             {bullets.map((b) => (
               <li key={b} className="flex gap-2 text-[12.5px] leading-snug text-ink">
                 <Icon.Check size={15} className="mt-0.5 shrink-0 text-royal" />
