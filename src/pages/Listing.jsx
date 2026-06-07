@@ -42,10 +42,6 @@ export default function Listing() {
         <h1 className="mt-2 font-display text-[26px] font-bold leading-[1.08] text-navy">
           Find the card that fits how you spend
         </h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-slatey">
-          Narrow {LISTED.length} cards down to the right two or three. Filter by what
-          you spend on, then compare side by side.
-        </p>
       </section>
 
       {/* Use-case filters */}

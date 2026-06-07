@@ -45,9 +45,9 @@ export default function DecisionTile({ card, index = 0 }) {
         <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={() => toggle(card.slug)}
-            className={`btn btn-md border ${selected ? 'border-royal bg-sky-soft text-royal' : 'border-line text-slatey hover:border-royal/40 hover:text-royal'}`}
+            className={`btn btn-md border ${selected ? 'border-royal bg-royal text-white' : 'border-royal text-royal hover:bg-sky-soft'}`}
           >
-            {selected ? 'Added' : 'Compare'}
+            {selected ? <><Icon.Check size={15} /> Added</> : 'Compare'}
           </button>
           <Link to={`/apply/${card.slug}`} className="btn btn-md bg-uobred text-white hover:bg-uobred-600">
             Apply

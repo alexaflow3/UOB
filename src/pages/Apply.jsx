@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
-import { Link, useParams, Navigate } from 'react-router-dom'
+import { Link, useParams, Navigate, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cardBySlug, PROMOS } from '../data/cards'
 import CardArt, { isPortraitArt } from '../components/CardArt'
@@ -18,20 +18,24 @@ const TIME_PER_STEP = [1, 1, 2, 1] // minutes
 
 export default function Apply() {
   const { slug } = useParams()
+  const navigate = useNavigate()
   const card = cardBySlug(slug)
   const [step, setStep] = useState(0)
   if (!card) return <Navigate to="/" replace />
 
   const minsLeft = TIME_PER_STEP.slice(step).reduce((a, b) => a + b, 0)
+  // Header Back: step backward through the flow, then exit to the page the user
+  // came from (listing / detail / offers) rather than always the detail page.
+  const handleBack = () => (step > 0 ? setStep((s) => s - 1) : navigate(-1))
 
   return (
     <div className="min-h-screen bg-mist">
       {/* Trimmed header — wordmark, secure badge, exit. No competing nav. */}
       <header className="sticky top-0 z-30 border-b border-line bg-white">
         <div className="flex h-14 items-center justify-between px-4">
-          <Link to={`/cards/${slug}`} className="inline-flex items-center gap-1 text-[13px] font-semibold text-slatey hover:text-navy">
+          <button onClick={handleBack} className="inline-flex items-center gap-1 text-[13px] font-semibold text-slatey hover:text-navy">
             <Icon.ArrowLeft size={16} /> Back
-          </Link>
+          </button>
           <img src={uobLogo} alt="UOB" className="h-[22px] w-auto" />
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slatey">
             <Icon.Lock size={14} className="text-royal" /> Secure
