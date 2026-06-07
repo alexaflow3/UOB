@@ -10,15 +10,16 @@ rounded tables. Content mirrors the old in-app CardDoc document.
 Output: public/uob-one-card-product-factsheet.pdf  (served by Vite under /UOB/)
 """
 import os
-from reportlab.lib.pagesizes import A4
+import tempfile
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import (
     BaseDocTemplate, PageTemplate, Frame, Paragraph, Spacer, Table, TableStyle,
-    HRFlowable, KeepTogether,
+    HRFlowable, KeepTogether, Image, PageBreak,
 )
+from PIL import Image as PILImage, ImageDraw
 
 # ---- UOB brand palette ------------------------------------------------------
 ROYAL = colors.HexColor("#005eb8")
@@ -33,6 +34,14 @@ LINE = colors.HexColor("#dfe4ec")
 LINE_70 = colors.HexColor("#e6eaf1")
 PAGE_BG = colors.HexColor("#eceff4")
 SKY_RING = colors.HexColor("#cfe0f5")
+ORANGE = colors.HexColor("#F09252")      # UOB "Confident" accent
+ORANGE_DK = colors.HexColor("#B5521A")
+ZEBRA = colors.HexColor("#f8fafc")
+NAVY_DIV = colors.HexColor("#26406e")    # hairlines on the navy hero
+KNOW_BG = colors.HexColor("#fff3ea")     # warm "good to know" card
+KNOW_RING = colors.HexColor("#f6cba4")
+SKY_DIM = colors.HexColor("#c7d3e6")     # subtitle on navy
+SKY_DIM2 = colors.HexColor("#9fb0cc")    # stat labels on navy
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOGO = os.path.join(HERE, "src", "assets", "uob-logo.png")
@@ -40,7 +49,15 @@ LOGO = os.path.join(HERE, "src", "assets", "uob-logo.png")
 # ---- Document content (kept in sync with the in-app CardDoc document) --------
 FILE_NAME = "uob-one-card-product-factsheet.pdf"
 UPDATED = "1 May 2026"
-TITLE = "UOB One Card — fees, rates &amp; key terms"
+TITLE = "UOB One Card"
+SUBTITLE = "Fees, rates &amp; key terms — at a glance"
+
+# Headline facts for the stat band (the "not boring" hero strip).
+STATS = [
+    ("Up to 10%", "cashback on eligible spend"),
+    ("S$196.20", "annual fee · 1st year free"),
+    ("S$30,000", "min. income (SG / PR)"),
+]
 
 SUMMARY_WHAT = ("A cashback credit card for everyday spend in Singapore — groceries, "
                 "transport, bills, food delivery and online shopping.")
@@ -143,14 +160,20 @@ CONTENT_W = FRAME_W
 styles = {
     "eyebrow": ParagraphStyle("eyebrow", fontName="Helvetica-Bold", fontSize=11,
                               textColor=ROYAL, leading=14, spaceAfter=4),
-    "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=25, textColor=NAVY,
-                         leading=30, spaceAfter=6),
+    "h1": ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=27, textColor=NAVY,
+                         leading=31, spaceAfter=0),
+    "subtitle": ParagraphStyle("subtitle", fontName="Helvetica", fontSize=14.5,
+                               textColor=SLATEY, leading=20),
+    "stat_num": ParagraphStyle("stat_num", fontName="Helvetica-Bold", fontSize=20,
+                               textColor=colors.white, leading=23),
+    "stat_label": ParagraphStyle("stat_label", fontName="Helvetica", fontSize=10,
+                                 textColor=SKY_DIM2, leading=13, spaceBefore=3),
     "label": ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=10.5,
                             textColor=SLATEY, leading=14, spaceAfter=3),
     "body": ParagraphStyle("body", fontName="Helvetica", fontSize=14.5, textColor=INK,
                            leading=21),
     "know_head": ParagraphStyle("know_head", fontName="Helvetica-Bold", fontSize=11,
-                                textColor=ROYAL, leading=15, spaceAfter=7),
+                                textColor=ORANGE_DK, leading=15, spaceAfter=7),
     "know_item": ParagraphStyle("know_item", fontName="Helvetica", fontSize=13.5,
                                 textColor=INK, leading=20, leftIndent=18,
                                 bulletIndent=0, spaceAfter=3),
@@ -167,6 +190,8 @@ styles = {
                                textColor=INK, leading=18),
     "cell_head": ParagraphStyle("cell_head", fontName="Helvetica-Bold", fontSize=10.5,
                                 textColor=SLATEY, leading=14),
+    "cell_head_w": ParagraphStyle("cell_head_w", fontName="Helvetica-Bold", fontSize=10,
+                                  textColor=colors.white, leading=14),
     "note": ParagraphStyle("note", fontName="Helvetica", fontSize=12, textColor=SLATEY,
                            leading=17, spaceBefore=8),
     "term_h": ParagraphStyle("term_h", fontName="Helvetica-Bold", fontSize=14,
@@ -183,36 +208,79 @@ def two_col_table(rows):
     data = [[Paragraph(k, styles["cell_key"]), Paragraph(v, styles["cell_val"])] for k, v in rows]
     t = Table(data, colWidths=[CONTENT_W * 0.46, CONTENT_W * 0.54])
     t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (0, -1), MIST_60),
-        ("LINEBELOW", (0, 0), (-1, -2), 0.5, LINE_70),
+        ("ROWBACKGROUNDS", (0, 0), (-1, -1), [colors.white, ZEBRA]),
+        ("LINEBELOW", (0, 0), (-1, -2), 0.4, LINE_70),
         ("BOX", (0, 0), (-1, -1), 0.6, LINE),
-        ("LINEAFTER", (0, 0), (0, -1), 0.5, LINE_70),
-        ("ROUNDEDCORNERS", [7, 7, 7, 7]),
+        ("ROUNDEDCORNERS", [9, 9, 9, 9]),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 13),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 13),
-        ("TOPPADDING", (0, 0), (-1, -1), 8),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 14),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 14),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
     ]))
     return t
 
 
+# Headline-fact stat band — three tiles on a dark navy strip (white numbers).
+def stat_band():
+    cells = [[Paragraph(n, styles["stat_num"]), Paragraph(l, styles["stat_label"])]
+             for n, l in STATS]
+    t = Table([cells], colWidths=[CONTENT_W / 3.0] * 3)
+    t.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), NAVY),
+        ("LINEAFTER", (0, 0), (-2, -1), 0.7, NAVY_DIV),
+        ("ROUNDEDCORNERS", [12, 12, 12, 12]),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 16),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+        ("TOPPADDING", (0, 0), (-1, -1), 15),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 15),
+    ]))
+    return t
+
+
+# Hero image — the lifestyle collage (story-one.png), cropped to a wide banner
+# with rounded corners, used as the cover image of the doc.
+def hero_image(ratio=2.35, radius=26):
+    src = PILImage.open(os.path.join(HERE, "src", "assets", "story-one.png")).convert("RGBA")
+    w, h = src.size
+    target_h = int(round(w / ratio))
+    if target_h <= h:                      # crop height (centre)
+        top = (h - target_h) // 2
+        crop = src.crop((0, top, w, top + target_h))
+    else:                                  # crop width (centre)
+        target_w = int(round(h * ratio))
+        left = (w - target_w) // 2
+        crop = src.crop((left, 0, left + target_w, h))
+    out_w = 1000
+    crop = crop.resize((out_w, int(round(out_w / ratio))), PILImage.LANCZOS)
+    mask = PILImage.new("L", crop.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, crop.size[0], crop.size[1]],
+                                           radius=int(radius / CONTENT_W * out_w), fill=255)
+    crop.putalpha(mask)
+    fd, path = tempfile.mkstemp(suffix=".png", prefix="fs_hero_")
+    os.close(fd)
+    crop.save(path)
+    return Image(path, width=CONTENT_W, height=CONTENT_W / ratio)
+
+
 def cashback_table():
-    head = [Paragraph(h.upper(), styles["cell_head"]) for h in CASHBACK_HEAD]
+    head = [Paragraph(h.upper(), styles["cell_head_w"]) for h in CASHBACK_HEAD]
     body = [[Paragraph(c, styles["cell_key"] if i == 0 else styles["cell_val"]) for i, c in enumerate(r)]
             for r in CASHBACK_ROWS]
     data = [head] + body
     t = Table(data, colWidths=[CONTENT_W * 0.36, CONTENT_W * 0.34, CONTENT_W * 0.30])
     t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), MIST),
-        ("LINEBELOW", (0, 0), (-1, -2), 0.5, LINE_70),
+        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, ZEBRA]),
+        ("LINEBELOW", (0, 1), (-1, -2), 0.4, LINE_70),
         ("BOX", (0, 0), (-1, -1), 0.6, LINE),
-        ("ROUNDEDCORNERS", [7, 7, 7, 7]),
+        ("ROUNDEDCORNERS", [9, 9, 9, 9]),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 13),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 13),
-        ("TOPPADDING", (0, 0), (-1, -1), 8),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 14),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 14),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
     ]))
     return t
 
@@ -223,13 +291,13 @@ def know_box():
         inner.append(Paragraph(k, styles["know_item"], bulletText="✓"))
     wrap = Table([[inner]], colWidths=[CONTENT_W])
     wrap.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), SKY_SOFT),
-        ("BOX", (0, 0), (-1, -1), 0.6, SKY_RING),
-        ("ROUNDEDCORNERS", [8, 8, 8, 8]),
-        ("LEFTPADDING", (0, 0), (-1, -1), 13),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 13),
-        ("TOPPADDING", (0, 0), (-1, -1), 12),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+        ("BACKGROUND", (0, 0), (-1, -1), KNOW_BG),
+        ("BOX", (0, 0), (-1, -1), 0.7, KNOW_RING),
+        ("ROUNDEDCORNERS", [10, 10, 10, 10]),
+        ("LEFTPADDING", (0, 0), (-1, -1), 16),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 16),
+        ("TOPPADDING", (0, 0), (-1, -1), 15),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 15),
     ]))
     return wrap
 
@@ -239,8 +307,15 @@ def divider():
                       spaceBefore=2, spaceAfter=2)
 
 
+def accent_rule():
+    # Short orange accent bar that leads each section heading.
+    return HRFlowable(width=32, thickness=3, color=ORANGE, spaceBefore=0, spaceAfter=8)
+
+
 def section(title, *flowables):
-    return KeepTogether([Paragraph(title, styles["h2"]), *flowables])
+    # Keep the accent + heading together (no orphan headings); let the table
+    # flow/split after it so pages fill continuously.
+    return [KeepTogether([accent_rule(), Paragraph(title, styles["h2"])]), *flowables]
 
 
 # ---- Page furniture: full-bleed white page, logo header, footer -------------
@@ -298,44 +373,60 @@ def build():
     doc.addPageTemplates([PageTemplate(id="all", frames=[frame], onPage=header_footer)])
 
     story = []
-    # Cover summary — breathing room below the logo/header rule
-    story.append(Spacer(1, 14))
+    SECTION_GAP = 20  # consistent rhythm between sections
+
+    # --- Hero image (the lifestyle collage) -----------------------------------
+    story.append(Spacer(1, 10))
+    story.append(hero_image())
+
+    # --- Title block: eyebrow, big title, orange accent, subtitle -------------
+    story.append(Spacer(1, 16))
     story.append(Paragraph("PRODUCT FACTSHEET", styles["eyebrow"]))
     story.append(Paragraph(TITLE, styles["h1"]))
-    story.append(Spacer(1, 12))
+    story.append(HRFlowable(width=44, thickness=3.5, color=ORANGE, spaceBefore=9, spaceAfter=9))
+    story.append(Paragraph(SUBTITLE, styles["subtitle"]))
+
+    # --- Headline stat band (dark navy strip) ---------------------------------
+    story.append(Spacer(1, 18))
+    story.append(stat_band())
+
+    # Page 1 is a clean cover; detail flows continuously from here.
+    story.append(PageBreak())
+
+    # --- What it is / who it's for --------------------------------------------
+    story.append(Spacer(1, 4))
     story.append(Paragraph("WHAT IT IS", styles["label"]))
     story.append(Paragraph(SUMMARY_WHAT, styles["body"]))
-    story.append(Spacer(1, 9))
+    story.append(Spacer(1, 12))
     story.append(Paragraph("WHO IT’S FOR", styles["label"]))
     story.append(Paragraph(SUMMARY_WHO, styles["body"]))
-    story.append(Spacer(1, 11))
+
+    # --- What you need to know ------------------------------------------------
+    story.append(Spacer(1, 18))
     story.append(know_box())
-    story.append(Spacer(1, 11))
-    story.append(divider())
-    story.append(Spacer(1, 10))
 
-    # Contents
-    story.append(Paragraph("ON THIS PAGE", styles["contents_head"]))
+    # --- Contents -------------------------------------------------------------
+    story.append(Spacer(1, 20))
+    story.append(Paragraph("ON THIS SHEET", styles["contents_head"]))
     for i, c in enumerate(CONTENTS, 1):
-        story.append(Paragraph(f'<font color="#5f6670">{i}.</font>&nbsp;&nbsp;{c}', styles["contents_item"]))
-    story.append(Spacer(1, 7))
-    story.append(divider())
-    story.append(Spacer(1, 12))
+        story.append(Paragraph(f'<font color="#F09252"><b>{i:02d}</b></font>&nbsp;&nbsp;&nbsp;{c}', styles["contents_item"]))
+    story.append(Spacer(1, SECTION_GAP))
 
-    # Sections
-    story.append(section("Fees &amp; charges", two_col_table(FEES)))
-    story.append(Spacer(1, 10))
-    story.append(section("Interest rates", two_col_table(RATES)))
-    story.append(Spacer(1, 10))
-    story.append(section("Cashback &amp; caps", cashback_table(),
+    # --- Detail sections (flow continuously, tables may split across pages) ---
+    story.extend(section("Fees &amp; charges", two_col_table(FEES)))
+    story.append(Spacer(1, SECTION_GAP))
+    story.extend(section("Interest rates", two_col_table(RATES)))
+    story.append(Spacer(1, SECTION_GAP))
+    story.extend(section("Cashback &amp; caps", cashback_table(),
                          Paragraph(CASHBACK_NOTE, styles["note"])))
-    story.append(Spacer(1, 10))
-    story.append(section("Who can apply", two_col_table(ELIGIBILITY)))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, SECTION_GAP))
+    story.extend(section("Who can apply", two_col_table(ELIGIBILITY)))
+    story.append(Spacer(1, SECTION_GAP))
 
     # Full terms — keep each heading with its body so headings never orphan;
     # bind the final clause to the closing rule + disclaimer so the tail of the
     # document doesn't strand a near-empty page on its own.
+    story.append(accent_rule())
     story.append(Paragraph("Full terms &amp; conditions", styles["h2"]))
     for i, (h, p) in enumerate(TERMS):
         block = [Paragraph(h, styles["term_h"]), Paragraph(p, styles["term_p"])]
