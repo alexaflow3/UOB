@@ -37,8 +37,8 @@ export default function DecisionTile({ card, index = 0 }) {
           glimmer (bright highlight band sweeping the centre). */}
       {card.popular && (
         <div
-          className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#6e3208]"
-          style={{ background: 'linear-gradient(105deg,#F09252 0%,#FFA666 30%,#FFC499 50%,#FFA666 70%,#F09252 100%)' }}
+          className="flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#B5521A]"
+          style={{ background: 'linear-gradient(105deg,#FFD9B8 0%,#FFEAD8 50%,#FFD9B8 100%)' }}
         >
           <Icon.Spark size={12} /> Popular
         </div>
