@@ -320,18 +320,18 @@ def build():
         story.append(Paragraph(f'<font color="#5f6670">{i}.</font>&nbsp;&nbsp;{c}', styles["contents_item"]))
     story.append(Spacer(1, 7))
     story.append(divider())
-    story.append(Spacer(1, 12))
+    story.append(Spacer(1, 18))
 
-    # Sections
+    # Sections — generous vertical rhythm between each section
     story.append(section("Fees &amp; charges", two_col_table(FEES)))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 22))
     story.append(section("Interest rates", two_col_table(RATES)))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 22))
     story.append(section("Cashback &amp; caps", cashback_table(),
                          Paragraph(CASHBACK_NOTE, styles["note"])))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 22))
     story.append(section("Who can apply", two_col_table(ELIGIBILITY)))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 22))
 
     # Full terms — keep each heading with its body so headings never orphan;
     # bind the final clause to the closing rule + disclaimer so the tail of the
