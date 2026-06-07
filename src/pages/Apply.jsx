@@ -390,8 +390,12 @@ function StepEligibility({ card, onSingpass, onManual }) {
         <button onClick={onSingpass} className="btn btn-lg w-full bg-[#f4333d] text-white hover:bg-[#d92a34]">
           <Icon.Lock size={18} /> Apply with Singpass
         </button>
-        <button onClick={onManual} className="btn btn-lg w-full bg-royal text-white hover:bg-royal-700">
-          <Icon.User size={18} /> Apply with UOB internet banking
+        <button
+          onClick={onManual}
+          className="btn btn-lg w-full text-white hover:brightness-105"
+          style={{ background: 'linear-gradient(135deg,#5b9bf5,#3f86e8)' }}
+        >
+          Apply with UOB bank details
         </button>
         <p className="text-center text-[12px] leading-snug text-slatey">
           New to UOB? Singpass pre-fills your details from Myinfo. Already bank with UOB? Log in with internet banking.
