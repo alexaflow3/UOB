@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 
 const CompareCtx = createContext(null)
-const MAX = 4
+const MAX = 2
 
 export function CompareProvider({ children }) {
   const [slugs, setSlugs] = useState([])
@@ -9,7 +9,8 @@ export function CompareProvider({ children }) {
   const toggle = useCallback((slug) => {
     setSlugs((cur) => {
       if (cur.includes(slug)) return cur.filter((s) => s !== slug)
-      if (cur.length >= MAX) return cur
+      // Cap at 2 — picking a third swaps out the oldest selection.
+      if (cur.length >= MAX) return [...cur.slice(1), slug]
       return [...cur, slug]
     })
   }, [])

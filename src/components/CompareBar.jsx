@@ -29,7 +29,7 @@ export default function CompareBar() {
                 <div>
                   <p className="font-display text-[15px] font-bold">Which card is right for you?</p>
                   <p className="text-[12px] text-white/65">
-                    Compare up to 4 cards — rewards, fees & eligibility, side by side.
+                    Compare two cards — rewards, fees &amp; eligibility, side by side.
                   </p>
                 </div>
                 <button onClick={clear} aria-label="Clear comparison" className="rounded-full p-1.5 text-white/60 hover:bg-white/10 hover:text-white">
@@ -38,10 +38,10 @@ export default function CompareBar() {
               </div>
               <div className="flex items-end gap-3 px-4 py-3">
                 <div className="flex flex-1 gap-2">
-                  {Array.from({ length: 4 }).map((_, i) => {
+                  {Array.from({ length: 2 }).map((_, i) => {
                     const c = cards[i]
                     return c ? (
-                      <div key={c.slug} className="relative w-1/4">
+                      <div key={c.slug} className="relative w-1/2">
                         <CardArt card={c} />
                         <button
                           onClick={() => remove(c.slug)}
@@ -52,7 +52,9 @@ export default function CompareBar() {
                         </button>
                       </div>
                     ) : (
-                      <div key={i} className="aspect-[1.586/1] w-1/4 rounded-2xl border border-dashed border-white/25" />
+                      <div key={i} className="grid aspect-[1.586/1] w-1/2 place-items-center rounded-2xl border border-dashed border-white/25 text-[11px] text-white/40">
+                        Add a card
+                      </div>
                     )
                   })}
                 </div>
@@ -63,7 +65,7 @@ export default function CompareBar() {
                   onClick={() => navigate(`/compare?cards=${slugs.join(',')}`)}
                   className="btn-primary btn-lg w-full disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {slugs.length < 2 ? 'Add one more to compare' : `Compare ${slugs.length} cards`}
+                  {slugs.length < 2 ? 'Add one more to compare' : 'Compare cards'}
                   <Icon.Scales size={18} />
                 </button>
               </div>
