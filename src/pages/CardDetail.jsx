@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useParams, Navigate } from 'react-router-dom'
+import { Link, useParams, Navigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cardBySlug, CARDS, PROMOS } from '../data/cards'
 import CardArt, { isPortraitArt } from '../components/CardArt'
@@ -21,6 +21,10 @@ const storyImage = (key) => STORY_IMAGES[`../assets/story-${key}.png`]
 // any tile without a matching photo keeps its icon + gradient as a fallback.
 const PERK_IMAGES = import.meta.glob('../assets/perk-*.png', { eager: true, import: 'default' })
 const perkImg = (key) => (key ? PERK_IMAGES[`../assets/perk-${key}.png`] : undefined)
+
+// Reward product shots for the on-page reward module.
+const REWARD_IMAGES = import.meta.glob('../assets/reward-*.png', { eager: true, import: 'default' })
+const rewardPhoto = (key) => (key ? REWARD_IMAGES[`../assets/reward-${key}.png`] : undefined)
 // Map each tile's title to its shared photo key (titles repeat across cards).
 const PERK_KEY = {
   'SMART$ rebates, automatically': 'rebates',
@@ -44,6 +48,41 @@ const PERK_KEY = {
   'No minimum spend': 'no-minimum',
   'Rebates as Lazada credit': 'lazada-credit',
   'Global lounge access': 'lounge',
+}
+
+// The sign-up reward shown ON the page (not routed away to the form). A
+// physical gift (PROMOS) takes priority; otherwise the welcome boost banner.
+function getReward(card) {
+  const promo = PROMOS.find((p) => p.cards.includes(card.slug))
+  if (promo) {
+    return {
+      eyebrow: 'Sign-up gift',
+      big: promo.reward + (promo.worth ? ` — worth ${promo.worth}` : ''),
+      condition: promo.condition,
+      rewardImage: promo.rewardImage,
+      validUntil: promo.validUntil,
+      endsSoon: promo.endsSoon,
+    }
+  }
+  if (card.promoBanner) {
+    return {
+      eyebrow: 'Welcome offer',
+      big: card.promoBanner.headline || card.promoBanner.text,
+      // Keep the headline rate AND its condition both legible (ONE Card caveat).
+      condition: card.promoBanner.condition
+        || 'New cardmembers only, for your first spend quarter. After that, earn the standard rate. T&Cs apply.',
+      rewardImage: null,
+    }
+  }
+  return null
+}
+
+// Reward thumbnail backdrops (emoji on gradient) for the on-page reward module.
+const REWARD_BG = {
+  airpods: 'linear-gradient(135deg,#1b2a3d,#39516f)',
+  miles: 'linear-gradient(135deg,#005eb8,#00237b)',
+  luggage: 'linear-gradient(135deg,#7a2150,#b0306b)',
+  cash: 'linear-gradient(135deg,#0a7a43,#16a35c)',
 }
 
 // Card Product Page — the main decision-making surface.
@@ -87,6 +126,18 @@ export default function CardDetail() {
   const headline = card.hero?.headline || card.valueProp || card.headline
   const bullets = card.hero?.body || card.highlights?.slice(0, 3) || []
 
+  // Two hero variants: product-first (organic / direct) vs reward-first (paid
+  // entry, ?from=offer) where the offer leads above the fold.
+  const [params] = useSearchParams()
+  const reward = getReward(card)
+  const rewardFirst = params.get('from') === 'offer' && Boolean(reward)
+
+  // In-page scroll (HashRouter makes href="#id" navigate, so scroll via JS).
+  const scrollToId = (id) => {
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   // 2.4 — "T&Cs apply" opens the product factsheet (PDF) when the card has one;
   // otherwise it falls back to the on-page terms section.
   const factsheet = FACTSHEETS[card.slug]
@@ -103,20 +154,33 @@ export default function CardDetail() {
           </Link>
         </div>
 
-        {/* Card-first hero — overline + value-prop headline at the very top. */}
+        {/* Card-first hero. Larger card face (key UOB brand asset). Two leads:
+            product-first (organic) or reward-first (paid entry, ?from=offer). */}
         <section className="px-5 pt-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-sky">{eyebrow}</p>
-          <h1 className="mt-2 font-display text-[24px] font-bold leading-[1.2] text-white">{headline}</h1>
+          {rewardFirst ? (
+            <>
+              <p className="inline-flex items-center gap-1.5 rounded-full bg-[#F09252] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[#3a1c00]">
+                <Icon.Spark size={13} /> {reward.eyebrow}
+              </p>
+              <h1 className="mt-3 font-display text-[26px] font-extrabold leading-[1.15] text-white">{reward.big}</h1>
+              <p className="mt-2.5 text-[13.5px] leading-snug text-white/65">{reward.condition}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-sky">{eyebrow}</p>
+              <h1 className="mt-2 font-display text-[24px] font-bold leading-[1.2] text-white">{headline}</h1>
+            </>
+          )}
 
-          {/* Floating card face on the dark field. */}
-          <div className={`mx-auto mt-6 ${isPortraitArt(card) ? 'w-[32%] max-w-[116px]' : 'w-[66%] max-w-[262px]'}`}>
+          {/* Floating card face — larger so the brand asset leads. */}
+          <div className={`mx-auto mt-6 ${isPortraitArt(card) ? 'w-[44%] max-w-[164px]' : 'w-[80%] max-w-[300px]'}`}>
             <motion.div initial={{ opacity: 0, y: 18, rotate: -2 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
               <CardArt card={card} bare floating />
             </motion.div>
           </div>
 
-          {/* Legible spend-category labels — translucent on the dark field. */}
-          {card.heroLabels && (
+          {/* Product-first: spend-category chips + benefit bullets. */}
+          {!rewardFirst && card.heroLabels && (
             <div className="mt-7 flex flex-wrap justify-center gap-2.5">
               {card.heroLabels.map((l) => (
                 <span key={l} className="rounded-full bg-white/10 px-3.5 py-2 text-[12px] font-semibold text-white ring-1 ring-white/20">
@@ -125,9 +189,7 @@ export default function CardDetail() {
               ))}
             </div>
           )}
-
-          {/* Benefit bullets */}
-          {bullets.length > 0 && (
+          {!rewardFirst && bullets.length > 0 && (
             <ul className="mt-9 space-y-4">
               {bullets.map((b) => (
                 <li key={b} className="flex gap-3 text-[15.5px] font-semibold leading-snug text-white">
@@ -138,17 +200,42 @@ export default function CardDetail() {
             </ul>
           )}
 
+          {/* Reward teaser — product-first only; scrolls DOWN to the on-page
+              reward module, never routes to the form (section 3). */}
+          {!rewardFirst && reward && (
+            <button
+              onClick={() => scrollToId('reward')}
+              className="mt-7 flex w-full items-center gap-3 rounded-card bg-white/10 px-4 py-3 text-left ring-1 ring-white/15 hover:bg-white/15"
+            >
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#F09252] text-[#3a1c00]">
+                <Icon.Spark size={18} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11px] font-bold uppercase tracking-wide text-[#ffc499]">{reward.eyebrow}</span>
+                <span className="block truncate text-[14px] font-bold text-white">{reward.big}</span>
+              </span>
+              <Icon.Chevron size={18} className="shrink-0 text-white/70" />
+            </button>
+          )}
+
           {/* In-hero Apply Now (2.3) — the first, most important CTA. */}
           <Link
             ref={heroCtaRef}
             to={`/apply/${card.slug}`}
-            className="btn-primary btn-lg mt-7 flex w-full bg-uobred hover:bg-uobred-600"
+            className="btn-primary btn-lg mt-5 flex w-full bg-uobred hover:bg-uobred-600"
           >
             Apply now
           </Link>
 
+          {/* Reward-first: a clear path to the full card details below. */}
+          {rewardFirst && (
+            <button onClick={() => scrollToId('card-details')} className="mt-3 flex w-full items-center justify-center gap-1.5 text-[13px] font-semibold text-white/70 hover:text-white">
+              See full card details <Icon.Chevron size={16} />
+            </button>
+          )}
+
           {/* T&Cs apply → opens the product factsheet PDF (2.4). */}
-          <p className="mt-4 pb-6 text-[12px] text-white/55">
+          <p className="mt-4 text-[12px] text-white/55">
             <a
               href={tcHref}
               {...(factsheet ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
@@ -158,10 +245,34 @@ export default function CardDetail() {
             </a>
           </p>
         </section>
+
+        {/* At-a-glance strip — cashback / annual fee / min income, on the dark
+            field directly under the hero (self-qualify before investing). */}
+        <div id="card-details" className="scroll-mt-4 mt-7 px-5">
+          <div className="grid grid-cols-3 gap-px overflow-hidden rounded-card bg-white/10 ring-1 ring-white/10">
+            {[
+              { v: card.earn.rate, l: card.tier === 'Travel' ? 'miles earn rate' : 'cashback rate' },
+              { v: card.fees.waiver?.toLowerCase().includes('waiv') ? 'S$0' : card.fees.annual, l: 'annual fee · 1st yr' },
+              { v: card.eligibility.income, l: 'min. income / yr' },
+            ].map((s) => (
+              <div key={s.l} className="bg-navy/40 px-3 py-3.5 text-center">
+                <p className="font-display text-[16px] font-extrabold leading-tight text-white">{s.v}</p>
+                <p className="mt-1 text-[10.5px] leading-tight text-white/55">{s.l}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Anchor links — jump to the sections that matter. */}
+          <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1.5 pb-7 text-[12.5px] font-semibold text-sky">
+            {reward && <button onClick={() => scrollToId('reward')} className="hover:text-white">Rewards</button>}
+            <button onClick={() => scrollToId('eligibility')} className="hover:text-white">Eligibility</button>
+            <button onClick={() => scrollToId('fees')} className="hover:text-white">Fees &amp; charges</button>
+          </div>
+        </div>
       </div>
 
-      {/* UDS promotion-banner — full-bleed blue band, 28px white icon, inline link */}
-      {card.promoBanner && <PromotionBanner banner={card.promoBanner} href={`/apply/${card.slug}`} />}
+      {/* Sign-up reward, ON the page — immediately after the hero (section 3). */}
+      {reward && <RewardModule reward={reward} card={card} />}
 
       {/* At a glance — table for cards with structured rows, else the 4-fact grid */}
       {card.glance ? (
@@ -246,25 +357,6 @@ export default function CardDetail() {
       {card.linkedProduct && <LinkedProduct product={card.linkedProduct} />}
 
       {/* Contextual cross-sell — ONE related promo, only if relevant */}
-      {relatedPromo && (
-        <section className="px-5 pt-7">
-          <h2 className="mb-2 text-[13px] font-bold uppercase tracking-wide text-slatey">Current offer</h2>
-          <Link to="/promotions" className="surface flex items-center gap-3 overflow-hidden p-3">
-            <RewardThumb id={relatedPromo.rewardImage} />
-            <div className="min-w-0 flex-1">
-              {relatedPromo.endsSoon && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-uobred/10 px-2 py-0.5 text-[10px] font-bold text-uobred">
-                  <Icon.Clock size={11} /> Ends {fmt(relatedPromo.validUntil)}
-                </span>
-              )}
-              <p className="mt-1 text-[14px] font-bold leading-tight text-navy">{relatedPromo.benefit}</p>
-              <p className="text-[12px] text-slatey">{relatedPromo.condition}</p>
-            </div>
-            <Icon.Arrow size={18} className="shrink-0 text-royal" />
-          </Link>
-        </section>
-      )}
-
       {/* Product factsheet — a real, downloadable PDF (not an in-app page) */}
       {FACTSHEETS[card.slug] && (
         <section className="px-5 pt-7">
@@ -342,21 +434,37 @@ export default function CardDetail() {
   )
 }
 
-// UDS promotion-banner: full-bleed UOB-blue band, 28px white icon at left,
-// white body copy with an inline underlined link. Copy capped at 100 chars.
-function PromotionBanner({ banner, href }) {
+// On-page sign-up reward (section 3): the reward lives here on the page; the
+// hero CTA scrolls to it instead of routing away to the form. Shows the reward
+// AND its condition both legible (ONE Card "20% / first-quarter" caveat).
+function RewardModule({ reward, card }) {
+  const photo = rewardPhoto(reward.rewardImage)
   return (
-    <section className="bg-royal">
-      <div className="flex items-center gap-3.5 px-5 py-4 text-white">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15">
-          <Icon.Spark size={22} />
-        </span>
-        <p className="text-[14px] leading-relaxed">
-          {banner.text}{' '}
-          <Link to={href} className="font-semibold underline underline-offset-2 decoration-1 hover:opacity-90">
-            {banner.cta}
+    <section id="reward" className="scroll-mt-3 bg-[#0c2647] px-5 py-9 text-white">
+      <p className="inline-flex items-center gap-1.5 rounded-full bg-[#F09252] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[#3a1c00]">
+        <Icon.Spark size={13} /> {reward.eyebrow}
+      </p>
+
+      <div className="mt-4 overflow-hidden rounded-card bg-white/[0.06] ring-1 ring-white/10">
+        {reward.rewardImage && (
+          <div className="grid aspect-[2.4/1] place-items-center overflow-hidden" style={{ background: REWARD_BG[reward.rewardImage] || REWARD_BG.cash }}>
+            {photo
+              ? <img src={photo} alt={reward.big} className="max-h-[80%] max-w-[55%] object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.4)]" />
+              : <span className="text-[56px]">{{ airpods: '🎧', miles: '✈️', luggage: '🧳', cash: '💵' }[reward.rewardImage] || '🎁'}</span>}
+          </div>
+        )}
+        <div className="p-5">
+          <h2 className="font-display text-[22px] font-extrabold leading-tight text-white">{reward.big}</h2>
+          <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{reward.condition}</p>
+          {reward.endsSoon && reward.validUntil && (
+            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-uobred/20 px-3 py-1 text-[12px] font-bold text-[#ff9a9a]">
+              <Icon.Clock size={13} /> Ends {fmt(reward.validUntil)}
+            </p>
+          )}
+          <Link to={`/apply/${card.slug}`} className="btn-primary btn-lg mt-5 flex w-full bg-uobred hover:bg-uobred-600">
+            Apply &amp; claim this offer
           </Link>
-        </p>
+        </div>
       </div>
     </section>
   )
@@ -466,7 +574,7 @@ function EligibilitySection({ card }) {
     { label: 'Documents needed', value: e.documents || 'NRIC / passport, latest income proof (or Singpass Myinfo)' },
   ]
   return (
-    <section className="px-5 pt-10">
+    <section id="eligibility" className="scroll-mt-3 px-5 pt-10">
       <h2 className="font-display text-[20px] font-bold leading-tight text-navy">Eligibility &amp; documents</h2>
       <div className="mt-4 divide-y divide-line/70 overflow-hidden rounded-card bg-white ring-1 ring-line/70">
         {rows.map((r) => (
@@ -492,7 +600,7 @@ function FeesSection({ card }) {
     { label: 'Minimum monthly payment', value: f.minPayment || 'S$50 or 3% of balance, whichever is higher' },
   ]
   return (
-    <section className="px-5 pt-10">
+    <section id="fees" className="scroll-mt-3 px-5 pt-10">
       <h2 className="font-display text-[20px] font-bold leading-tight text-navy">Annual fee &amp; charges</h2>
       <div className="mt-4 divide-y divide-line/70 overflow-hidden rounded-card bg-white ring-1 ring-line/70">
         {rows.map((r) => (
