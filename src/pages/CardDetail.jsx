@@ -803,6 +803,44 @@ function BenefitTabs({ tabs, tabKeys }) {
   )
 }
 
+// Auto-rotating feature highlights — the card's headline earn features rotate
+// in a carousel (Jun-10: "use a carousel so the user sees benefits rotating,
+// in the features section, not the hero").
+function FeatureCarousel({ tiles }) {
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    if (tiles.length <= 1) return undefined
+    const id = setInterval(() => setI((p) => (p + 1) % tiles.length), 3200)
+    return () => clearInterval(id)
+  }, [tiles.length])
+  if (!tiles.length) return null
+  const t = tiles[Math.min(i, tiles.length - 1)]
+  return (
+    <div className="mt-5 overflow-hidden rounded-card bg-[linear-gradient(135deg,#0a2240,#143a6b)] text-white">
+      <div className="relative h-[118px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: 18 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -18 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-0 flex flex-col justify-center px-5"
+          >
+            <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-sky">{t.title}</p>
+            <p className="mt-1.5 text-[16.5px] font-bold leading-snug text-white">{t.body}</p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <div className="flex justify-center gap-1.5 pb-3">
+        {tiles.map((s, d) => (
+          <span key={s.title} className={`h-1.5 rounded-full transition-all ${d === i ? 'w-4 bg-white' : 'w-1.5 bg-white/30'}`} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // Benefits restructured into category tabs. Cashback leads; each tab holds
 // labelled tiles. A collapsible "how you earn" accordion carries the long detail.
 function BenefitsSection({ benefits }) {
@@ -812,6 +850,9 @@ function BenefitsSection({ benefits }) {
     <section id="benefits" className="scroll-mt-20 px-5 pt-8">
       <p className="eyebrow">{benefits.eyebrow}</p>
       <h2 className="mt-1.5 font-display text-[22px] font-bold leading-tight text-navy">{benefits.heading}</h2>
+
+      {/* Rotating highlights of the headline earn features. */}
+      <FeatureCarousel tiles={benefits.tabs[0].tiles.slice(0, 6)} />
 
       {/* Category tabs */}
       <div className="no-scrollbar mt-6 flex gap-2 overflow-x-auto">
