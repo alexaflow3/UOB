@@ -234,24 +234,21 @@ export default function CardDetail() {
             </button>
           )}
 
-          {/* T&Cs apply → opens the product factsheet PDF (2.4). */}
-          <p className="mt-4 text-[12px] text-white/55">
-            <a
-              href={tcHref}
-              {...(factsheet ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-              className="underline underline-offset-2 hover:text-white/80"
-            >
-              T&amp;Cs apply
-            </a>
-          </p>
         </section>
 
-        {/* Anchor links — jump to the sections that matter. */}
-        <div id="card-details" className="scroll-mt-4 px-5">
+        {/* Anchor links + T&Cs — same row, same styling. */}
+        <div id="card-details" className="scroll-mt-4 mt-5 px-5">
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 pb-7 text-[12.5px] font-semibold text-sky">
             {reward && <button onClick={() => scrollToId('reward')} className="hover:text-white">Rewards</button>}
             <button onClick={() => scrollToId('eligibility')} className="hover:text-white">Eligibility</button>
             <button onClick={() => scrollToId('fees')} className="hover:text-white">Fees &amp; charges</button>
+            <a
+              href={tcHref}
+              {...(factsheet ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              className="hover:text-white"
+            >
+              T&amp;Cs apply
+            </a>
           </div>
         </div>
       </div>
