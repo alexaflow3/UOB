@@ -96,15 +96,13 @@ export default function Apply() {
           <div className="mx-auto max-w-[460px] space-y-2.5">
             <button
               onClick={() => setStep(1)}
-              disabled={!fatca}
-              className="btn btn-lg w-full gap-2 bg-[#F4333D] text-white hover:bg-[#e02b35] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#F4333D]"
+              className="btn btn-lg w-full gap-2 bg-[#F4333D] text-white hover:bg-[#e02b35]"
             >
               Retrieve my info with <SingpassMark />
             </button>
             <button
               onClick={() => setStep(2)}
-              disabled={!fatca}
-              className="btn btn-lg w-full gap-2 text-white hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+              className="btn btn-lg w-full gap-2 text-white hover:brightness-105"
               style={{ background: 'linear-gradient(135deg,#5b9bf5,#3f86e8)' }}
             >
               Existing customer? Log in with
