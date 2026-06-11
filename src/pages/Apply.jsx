@@ -38,7 +38,7 @@ export default function Apply() {
           </button>
           <img src={uobLogo} alt="UOB" className="h-[22px] w-auto" />
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slatey">
-            <Icon.Lock size={14} className="text-royal" /> Secure
+            <Icon.Lock size={14} className="text-royal" /> Secure &amp; encrypted
           </span>
         </div>
 
@@ -352,6 +352,15 @@ function RewardCarousel({ card }) {
 /* ---------- Step 1: Pre-step gate (4.3) ----------
    Conversion-led order: (1) the reward you're getting, (2) which card,
    (3) what to have ready, (4) two CTAs — Singpass and manual. */
+// Official-style Singpass wordmark. Drop the real logo in as
+// src/assets/singpass-logo.{svg,png} and it replaces the text automatically.
+const SINGPASS_LOGO = import.meta.glob('../assets/singpass-logo.{svg,png}', { eager: true, import: 'default' })
+function SingpassMark() {
+  const logo = SINGPASS_LOGO['../assets/singpass-logo.svg'] || SINGPASS_LOGO['../assets/singpass-logo.png']
+  if (logo) return <img src={logo} alt="Singpass" className="h-[19px] w-auto" />
+  return <span className="font-display text-[17px] font-extrabold lowercase tracking-[-0.01em]">singpass</span>
+}
+
 function StepEligibility({ card, onSingpass, onManual }) {
   const docs = ['NRIC (front & back)', 'Latest income proof or CPF statement', 'Singpass login']
 
@@ -384,18 +393,21 @@ function StepEligibility({ card, onSingpass, onManual }) {
         </p>
       </section>
 
-      {/* 4. Two CTAs — Singpass (everyone) + UOB internet banking (existing
-          customers). No manual route. */}
+      {/* 4. Two unmistakably different routes — the official Singpass button
+          (everyone) vs a UOB-styled existing-customer button. No manual route. */}
       <div className="space-y-3">
-        <button onClick={onSingpass} className="btn btn-lg w-full bg-[#f4333d] text-white hover:bg-[#d92a34]">
-          <Icon.Lock size={18} /> Apply with Singpass
+        <button
+          onClick={onSingpass}
+          className="btn btn-lg w-full gap-2 bg-[#F4333D] text-white hover:bg-[#e02b35]"
+        >
+          Retrieve my info with <SingpassMark />
         </button>
         <button
           onClick={onManual}
           className="btn btn-lg w-full text-white hover:brightness-105"
           style={{ background: 'linear-gradient(135deg,#5b9bf5,#3f86e8)' }}
         >
-          Apply with UOB bank details
+          Existing customer? Log in with UOB
         </button>
         <p className="text-center text-[12px] leading-snug text-slatey">
           New to UOB? Singpass pre-fills your details from Myinfo. Already bank with UOB? Log in with internet banking.
@@ -408,9 +420,8 @@ function StepEligibility({ card, onSingpass, onManual }) {
 /* ---------- Step 2: How would you like to apply? ---------- */
 function StepMethod({ card, onBack, onNext }) {
   const [method, setMethod] = useState(null)
-  const [fatca, setFatca] = useState(false)
   const [showFine, setShowFine] = useState(false)
-  const ready = method && fatca
+  const ready = Boolean(method)
 
   const groups = [
     {
@@ -489,20 +500,6 @@ function StepMethod({ card, onBack, onNext }) {
         ))}
       </div>
 
-      {/* FATCA declaration */}
-      <button
-        onClick={() => setFatca((v) => !v)}
-        className={`flex w-full items-start gap-3 rounded-card border p-3.5 text-left transition-colors ${fatca ? 'border-royal bg-sky-soft' : 'border-line bg-white'}`}
-      >
-        <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 ${fatca ? 'border-royal bg-royal text-white' : 'border-line'}`}>
-          {fatca && <Icon.Check size={13} />}
-        </span>
-        <span className="text-[13px] leading-snug text-navy">
-          I confirm I am not a U.S. citizen, U.S. resident or U.S. green card holder, and have not spent a significant number of days in the U.S. each year.{' '}
-          <span className="font-semibold text-royal underline underline-offset-2">What is FATCA?</span>
-        </span>
-      </button>
-
       {/* Fine print / other routes — available but tucked away (distraction-reduced) */}
       <div className="rounded-card border border-line/70 bg-white">
         <button onClick={() => setShowFine((v) => !v)} className="flex w-full items-center justify-between px-4 py-3 text-left">
@@ -527,7 +524,7 @@ function StepMethod({ card, onBack, onNext }) {
       <div className="flex gap-3 pt-1">
         <button onClick={onBack} className="btn-secondary btn-lg flex-1">Back</button>
         <button disabled={!ready} onClick={onNext} className="btn-primary btn-lg flex-[2] disabled:opacity-50">
-          {!method ? 'Choose a method' : !fatca ? 'Confirm the declaration' : 'Continue'}
+          {ready ? 'Continue' : 'Choose a method'}
           {ready && <Icon.Arrow size={18} />}
         </button>
       </div>
@@ -539,9 +536,10 @@ function StepMethod({ card, onBack, onNext }) {
 function StepDetails({ onBack, onNext }) {
   const [form, setForm] = useState({ name: 'TAN WEI MING', nric: '', income: '', email: '', mobile: '' })
   const [touched, setTouched] = useState({})
+  const [fatca, setFatca] = useState(false)
 
   const errors = useMemo(() => validate(form), [form])
-  const valid = Object.keys(errors).length === 0
+  const valid = Object.keys(errors).length === 0 && fatca
   const mark = (k) => setTouched((t) => ({ ...t, [k]: true }))
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
@@ -556,6 +554,24 @@ function StepDetails({ onBack, onNext }) {
       <Field label="Annual income (S$)" value={form.income} placeholder="e.g. 48000" inputMode="numeric" onChange={(v) => set('income', v.replace(/[^\d]/g, ''))} onBlur={() => mark('income')} error={touched.income && errors.income} hint="Before CPF deductions" />
       <Field label="Email" value={form.email} placeholder="you@email.com" inputMode="email" onChange={(v) => set('email', v)} onBlur={() => mark('email')} error={touched.email && errors.email} />
       <Field label="Mobile number" value={form.mobile} placeholder="9123 4567" inputMode="tel" prefix="+65" onChange={(v) => set('mobile', v.replace(/[^\d]/g, '').slice(0, 8))} onBlur={() => mark('mobile')} error={touched.mobile && errors.mobile} />
+
+      {/* Tax-residency (FATCA) declaration — now post-login, once committed,
+          framed as a quick confirmation rather than a pre-login gate. */}
+      <div className="rounded-card bg-white p-4 ring-1 ring-line/70">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-slatey">Tax residency</p>
+        <button
+          onClick={() => setFatca((v) => !v)}
+          className={`mt-3 flex w-full items-start gap-3 rounded-tile border p-3 text-left transition-colors ${fatca ? 'border-royal bg-sky-soft' : 'border-line bg-white'}`}
+        >
+          <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 ${fatca ? 'border-royal bg-royal text-white' : 'border-line'}`}>
+            {fatca && <Icon.Check size={13} />}
+          </span>
+          <span className="text-[13px] leading-snug text-navy">
+            I confirm I am not a U.S. person for tax purposes.{' '}
+            <span className="font-semibold text-royal underline underline-offset-2">What does this mean?</span>
+          </span>
+        </button>
+      </div>
 
       <div className="flex gap-3 pt-1">
         <button onClick={onBack} className="btn-secondary btn-lg flex-1">Back</button>
