@@ -78,7 +78,7 @@ export default function Apply() {
         <RewardCarousel card={card} />
       </div>
 
-      <div className={`px-5 pt-5 ${step === 0 ? 'pb-[184px]' : 'pb-6'}`}>
+      <div className={`px-5 pt-5 ${step === 0 ? 'pb-[180px]' : 'pb-6'}`}>
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
             {step === 0 && <StepEligibility card={card} fatca={fatca} setFatca={setFatca} />}
@@ -90,9 +90,10 @@ export default function Apply() {
       </div>
 
       {/* Sticky shelf — the two application routes float at the bottom on the
-          eligibility step, gated on the FATCA confirmation. */}
+          eligibility step. Fixed on mobile, absolute-within-frame on desktop
+          (same pattern as the bottom nav) so it never spans the whole window. */}
       {step === 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur lg:absolute">
           <div className="mx-auto max-w-[460px] space-y-2.5">
             <button
               onClick={() => setStep(1)}
