@@ -246,24 +246,9 @@ export default function CardDetail() {
           </p>
         </section>
 
-        {/* At-a-glance strip — cashback / annual fee / min income, on the dark
-            field directly under the hero (self-qualify before investing). */}
-        <div id="card-details" className="scroll-mt-4 mt-7 px-5">
-          <div className="grid grid-cols-3 gap-px overflow-hidden rounded-card bg-white/10 ring-1 ring-white/10">
-            {[
-              { v: card.earn.rate, l: card.tier === 'Travel' ? 'miles earn rate' : 'cashback rate' },
-              { v: card.fees.waiver?.toLowerCase().includes('waiv') ? 'S$0' : card.fees.annual, l: 'annual fee · 1st yr' },
-              { v: card.eligibility.income, l: 'min. income / yr' },
-            ].map((s) => (
-              <div key={s.l} className="bg-navy/40 px-3 py-3.5 text-center">
-                <p className="font-display text-[16px] font-extrabold leading-tight text-white">{s.v}</p>
-                <p className="mt-1 text-[10.5px] leading-tight text-white/55">{s.l}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Anchor links — jump to the sections that matter. */}
-          <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1.5 pb-7 text-[12.5px] font-semibold text-sky">
+        {/* Anchor links — jump to the sections that matter. */}
+        <div id="card-details" className="scroll-mt-4 px-5">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 pb-7 text-[12.5px] font-semibold text-sky">
             {reward && <button onClick={() => scrollToId('reward')} className="hover:text-white">Rewards</button>}
             <button onClick={() => scrollToId('eligibility')} className="hover:text-white">Eligibility</button>
             <button onClick={() => scrollToId('fees')} className="hover:text-white">Fees &amp; charges</button>
