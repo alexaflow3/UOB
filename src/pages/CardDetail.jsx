@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useParams, Navigate, useSearchParams } from 'react-router-dom'
+import { Link, useParams, Navigate, useSearchParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cardBySlug, CARDS, PROMOS } from '../data/cards'
 import CardArt, { isPortraitArt } from '../components/CardArt'
 import { Icon } from '../lib/icons'
 import { useCompare } from '../lib/compare'
+import pedestalUrl from '../assets/pedestal.png'
 
 // Real downloadable product factsheets (PDFs in /public), keyed by card slug.
 // The "buried PDF reimagined" content now ships as an actual file, not an
@@ -25,6 +26,20 @@ const perkImg = (key) => (key ? PERK_IMAGES[`../assets/perk-${key}.png`] : undef
 // Reward product shots for the on-page reward module.
 const REWARD_IMAGES = import.meta.glob('../assets/reward-*.png', { eager: true, import: 'default' })
 const rewardPhoto = (key) => (key ? REWARD_IMAGES[`../assets/reward-${key}.png`] : undefined)
+// Partner brand logos for the hero reward carousel's category slides.
+const BRAND_IMG = import.meta.glob('../assets/brands/brand-*.{png,jpg,svg}', { eager: true, import: 'default' })
+const brandImg = (key) =>
+  BRAND_IMG[`../assets/brands/brand-${key}.png`] ||
+  BRAND_IMG[`../assets/brands/brand-${key}.svg`] ||
+  BRAND_IMG[`../assets/brands/brand-${key}.jpg`]
+
+// Category offer photos for the reward-first hero (e.g. McDonald's food for the
+// dining offer). Drop offer-<category-slug>.{png,jpg} into src/assets; until
+// then the hero falls back to the card art. Slug = lowercased category, spaces
+// and punctuation collapsed to single dashes (e.g. "Daily Commute" → daily-commute).
+const OFFER_IMG = import.meta.glob('../assets/offer-*.{png,jpg}', { eager: true, import: 'default' })
+const offerSlug = (s = '') => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const offerPhoto = (key) => (key ? OFFER_IMG[`../assets/offer-${key}.png`] || OFFER_IMG[`../assets/offer-${key}.jpg`] : undefined)
 // Map each tile's title to its shared photo key (titles repeat across cards).
 const PERK_KEY = {
   'SMART$ rebates, automatically': 'rebates',
@@ -68,14 +83,32 @@ function getReward(card) {
     return {
       eyebrow: 'Welcome offer',
       big: card.promoBanner.headline || card.promoBanner.text,
+      sub: card.promoBanner.sub || '',
       // Keep the headline rate AND its condition both legible (ONE Card caveat).
       condition: card.promoBanner.condition
         || 'New cardmembers only, for your first spend quarter. After that, earn the standard rate. T&Cs apply.',
-      rewardImage: null,
+      rewardImage: card.promoBanner.rewardImage || 'cash',
     }
   }
   return null
 }
+
+// Fallback imagery for category tiles that have no partner brand logos — a
+// gradient tile with a category-appropriate emoji keeps the carousel populated
+// on every card (e.g. Lady's "chosen category" tiles).
+const CATEGORY_EMOJI = {
+  beauty: '💄', wellness: '💄', dining: '🍽️', food: '🍔', fashion: '👗',
+  travel: '✈️', air: '✈️', flight: '✈️', hotel: '🏨', family: '👨‍👩‍👧',
+  transport: '🚆', commute: '🚆', grab: '🚗', shopping: '🛍️', online: '🛍️',
+  groceries: '🛒', fuel: '⛽', utilities: '💡', overseas: '🌏', miles: '✈️',
+  rewards: '🎁', entertainment: '🎬',
+}
+const categoryEmoji = (category = '') => {
+  const c = category.toLowerCase()
+  const hit = Object.keys(CATEGORY_EMOJI).find((k) => c.includes(k))
+  return hit ? CATEGORY_EMOJI[hit] : '✨'
+}
+const CATEGORY_TILE_BG = 'linear-gradient(135deg,#143a6b,#0a2240)'
 
 // Reward thumbnail backdrops (emoji on gradient) for the on-page reward module.
 const REWARD_BG = {
@@ -127,15 +160,89 @@ export default function CardDetail() {
   const bullets = card.hero?.body || card.highlights?.slice(0, 3) || []
 
   // Two hero variants: product-first (organic / direct) vs reward-first (paid
-  // entry, ?from=offer) where the offer leads above the fold.
+  // entry, ?from=offer) where the offer leads above the fold. ?offer=<category>
+  // leads with a specific category cashback offer and a category photo.
   const [params] = useSearchParams()
   const reward = getReward(card)
-  const rewardFirst = params.get('from') === 'offer' && Boolean(reward)
+  const offerKey = params.get('offer')
+  const offerTile = offerKey ? (card.applyTiles || []).find((t) => offerSlug(t.category) === offerKey) : null
+  // Per-category nudge for the floating offer photo (some PNGs sit left in their
+  // canvas and overlap the card too much). Right-anchored, so a more-negative
+  // value pushes the artwork further right. Defaults to 1%.
+  const ck = `${card.slug}:${offerKey}`
+  const offerRight = { 'ladys-card:dining': '-5%', 'ladys-card:travel': '-5%', 'preferred-visa-card:mobile-contactless': '-7%', 'preferred-visa-card:entertainment': '-6%', 'preferred-visa-card:food-delivery': '-13%', 'krisflyer-card:dining': '-10%', 'evol-card:mobile-contactless': '-7%', 'prvi-miles-card:overseas-spend': '-9%', 'lazada-uob-card:dining-transport': '-4%', 'visa-infinite-metal-card:overseas-spend': '-9%', 'visa-infinite-metal-card:travel-cover': '-9%' }[ck] || { 'daily-commute': '6%' }[offerKey] || '1%'
+  // Optional left override to shift the card (and so the whole cluster).
+  const cardLeftOverride = { 'ladys-card:dining': '8%', 'ladys-card:travel': '8%', 'evol-card:mobile-contactless': '19%' }[ck]
+  // Optional bottom override to lower the offer photo in the default layout.
+  const offerBottom = { 'preferred-visa-card:mobile-contactless': '-9%', 'lazada-uob-card:dining-transport': '-9%' }[ck] || '0px'
+  // Per-category height for the floating offer photo (default 192px). Some
+  // subjects (e.g. a person) read better scaled up toward the card's height.
+  const offerH = { 'evol-card:mobile-contactless': '211px', 'prvi-miles-card:overseas-spend': '211px', 'visa-infinite-metal-card:overseas-spend': '211px' }[`${card.slug}:${offerKey}`]
+    || { shopping: '224px', entertainment: '221px', 'online-shopping': '226px', 'air-travel': '225px', 'online-travel': '168px' }[offerKey]
+    || '192px'
+  // Optional per-category card-size override (default sizing otherwise).
+  const cardSizeOverride = { 'evol-card:online-shopping': 'w-[34%] max-w-[124px]', 'evol-card:mobile-contactless': 'w-[36%] max-w-[130px]', 'absolute-cashback-card:public-transport': 'w-[34%] max-w-[124px]', 'lazada-uob-card:dining-transport': 'w-[34%] max-w-[124px]' }[`${card.slug}:${offerKey}`]
+  // "Centered" composition: the card slides in from the left tilted the other
+  // way while the offer photo sits to the right. Used where the default
+  // right-anchored photo crowds the card.
+  const heroCentered = offerKey === 'daily-commute'
+  // "House" composition: the offer photo is the big centered hero, the card is
+  // shrunk and tucked at its bottom-right, tilted right.
+  const heroHouse = offerKey === 'utilities'
+  // House-layout dimensions — same hero height across categories.
+  const houseBoxH = '232px'
+  const houseImgH = '228px'
+  const houseCardBottom = 'bottom-0'
+  // Fuel: a balanced, centered pair — pump on the left overlapping a larger
+  // card on the right.
+  const heroBalanced = offerKey === 'fuel'
+  // Mirror the default layered hero (card on the right, offer photo on the left).
+  const heroMirror = ['evol-card:online-shopping', 'absolute-cashback-card:public-transport'].includes(ck)
+  // Offer-led: a big landscape offer photo is the hero, with a smaller card
+  // tucked at its bottom-right.
+  const heroOfferLed = ck === 'prvi-miles-card:flights-hotels'
+  // Optional per-category card tilt (degrees). Negative leans the top left.
+  const cardRotate = { 'evol-card:online-shopping': -14 }[ck] ?? (heroCentered ? 15 : -7)
+  const cardRotateInit = cardRotate >= 0 ? cardRotate + 4 : cardRotate - 4
+  // Per-category vertical offset for the card in the default layered hero.
+  const cardTop = { 'ladys-card:beauty-wellness': '15%', 'ladys-card:dining': '15%', 'ladys-card:fashion': '15%', 'ladys-card:travel': '15%', 'preferred-visa-card:mobile-contactless': '10%', 'preferred-visa-card:entertainment': '10%', 'preferred-visa-card:food-delivery': '10%', 'preferred-visa-card:online-shopping': '10%', 'krisflyer-card:air-travel': '10%', 'krisflyer-card:dining': '10%', 'krisflyer-card:online-travel': '10%', 'evol-card:online-shopping': '10%', 'prvi-miles-card:overseas-spend': '10%', 'lazada-uob-card:dining-transport': '10%', 'visa-infinite-metal-card:overseas-spend': '10%', 'visa-infinite-metal-card:travel-cover': '10%' }[`${card.slug}:${offerKey}`] || '0%'
+  // The reward-first "lead": a category offer tile takes priority, else the
+  // card's welcome offer / sign-up gift.
+  const lead = offerTile
+    ? {
+        eyebrow: offerTile.category,
+        // Headline ties the offer to the card so an ad-lander immediately sees
+        // which UOB card unlocks the cashback (e.g. "Up to 20% cashback with UOB
+        // One Card"). A tile may override the lead phrase via `offerHeadline`.
+        big: `${offerTile.offerHeadline || `${offerTile.value} ${offerTile.metric}`.trim()} with ${card.name}`,
+        condition: offerTile.at || '',
+        image: offerPhoto(offerSlug(offerTile.category)),
+      }
+    : reward
+      ? {
+          eyebrow: reward.eyebrow,
+          big: reward.big,
+          condition: reward.condition,
+          // Use the reward photo, or the cashback 3D icon for cash welcome offers,
+          // so the welcome-offer hero gets the same pedestal staging.
+          image: rewardPhoto(reward.rewardImage) || (reward.rewardImage === 'cash' ? brandImg('cashback') : null),
+        }
+      : null
+  const rewardFirst = params.get('from') === 'offer' && Boolean(lead)
 
   // In-page scroll (HashRouter makes href="#id" navigate, so scroll via JS).
   const scrollToId = (id) => {
     const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  // Benefits tab state lifted here so the hero "Rewards" anchor can open the
+  // Rewards tab and scroll to the Benefits section in one click.
+  const [benefitsTab, setBenefitsTab] = useState(0)
+  const rewardsTabIndex = card.benefits ? card.benefits.tabs.findIndex((t) => /reward/i.test(t.label)) : -1
+  const goToRewards = () => {
+    if (rewardsTabIndex >= 0) setBenefitsTab(rewardsTabIndex)
+    scrollToId('benefits')
   }
 
   // 2.4 — "T&Cs apply" opens the product factsheet (PDF) when the card has one;
@@ -149,21 +256,28 @@ export default function CardDetail() {
           translucent chips, white benefit bullets, and an in-hero Apply Now. */}
       <div className="bg-[linear-gradient(180deg,#0a2240_0%,#0a2240_62%,#0c2647_100%)] text-white">
         <div className="px-5 pt-3">
-          <Link to="/" className="inline-flex items-center gap-1 text-[13px] font-semibold text-white/80 hover:text-white">
-            <Icon.ArrowLeft size={16} /> All cards
-          </Link>
+          {rewardFirst ? (
+            <nav className="flex flex-wrap items-center gap-1.5 text-[12.5px] font-semibold text-white/55">
+              <Link to="/" className="hover:text-white">All cards</Link>
+              <Icon.Chevron size={13} className="-rotate-90 text-white/35" />
+              <Link to={`/cards/${card.slug}`} className="hover:text-white">{card.name}</Link>
+              <Icon.Chevron size={13} className="-rotate-90 text-white/35" />
+              <span className="text-white">{lead.eyebrow}</span>
+            </nav>
+          ) : (
+            <Link to="/" className="inline-flex items-center gap-1 text-[13px] font-semibold text-white/80 hover:text-white">
+              <Icon.ArrowLeft size={16} /> All cards
+            </Link>
+          )}
         </div>
 
         {/* Card-first hero. Larger card face (key UOB brand asset). Two leads:
             product-first (organic) or reward-first (paid entry, ?from=offer). */}
-        <section className="px-5 pt-4">
+        <section className="px-5 pt-6">
           {rewardFirst ? (
             <>
-              <p className="inline-flex items-center gap-1.5 rounded-full bg-[#F09252] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[#3a1c00]">
-                <Icon.Spark size={13} /> {reward.eyebrow}
-              </p>
-              <h1 className="mt-3 font-display text-[26px] font-extrabold leading-[1.15] text-white">{reward.big}</h1>
-              <p className="mt-2.5 text-[13.5px] leading-snug text-white/65">{reward.condition}</p>
+              <h1 className="font-display text-[26px] font-extrabold leading-[1.15] text-white">{lead.big}</h1>
+              {lead.condition && <p className="mt-2.5 text-[13.5px] leading-snug text-white/65">{lead.condition}</p>}
             </>
           ) : (
             <>
@@ -172,23 +286,76 @@ export default function CardDetail() {
             </>
           )}
 
-          {/* Floating card face — larger so the brand asset leads. */}
-          <div className={`mx-auto mt-6 ${isPortraitArt(card) ? 'w-[44%] max-w-[164px]' : 'w-[80%] max-w-[300px]'}`}>
-            <motion.div initial={{ opacity: 0, y: 18, rotate: -2 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-              <CardArt card={card} bare floating />
-            </motion.div>
-          </div>
+          {/* Hero visual — a category offer photo when we have one for a
+              ?offer= lead, otherwise the floating card face. */}
+          {rewardFirst && lead.image ? (
+            // Pedestal campaign hero — premium product-ad staging: a soft-lit
+            // food cluster grounded on the left and the UOB card standing on a
+            // lit blue pedestal on the right, sharing one stage plane. Landscape
+            // cards are short, so the stage is shorter to avoid empty top space.
+            <div className="relative mx-auto mt-6 w-full max-w-[340px]" style={{ height: isPortraitArt(card) ? '296px' : '244px' }}>
+              {/* Ambient radial light so the navy has depth — wide and soft so
+                  it never shows a hard edge. */}
+              <div
+                className="pointer-events-none absolute -inset-x-8 -inset-y-10"
+                style={{ background: 'radial-gradient(135% 95% at 60% 22%, rgba(46,86,178,0.26), rgba(10,34,64,0) 72%)', filter: 'blur(8px)' }}
+              />
 
-          {/* Product-first: spend-category chips + benefit bullets. */}
-          {!rewardFirst && card.heroLabels && (
-            <div className="mt-7 flex flex-wrap justify-center gap-2.5">
-              {card.heroLabels.map((l) => (
-                <span key={l} className="rounded-full bg-white/10 px-3.5 py-2 text-[12px] font-semibold text-white ring-1 ring-white/20">
-                  {l}
-                </span>
-              ))}
+              {/* RIGHT: spotlight + large pedestal + smaller standing card */}
+              <div className="absolute bottom-0 right-0 z-10 h-full w-[60%]">
+                {/* Vertical spotlight behind the card — a soft, blurred beam that
+                    extends past the frame so its falloff never hits an edge. */}
+                <div
+                  className="pointer-events-none absolute left-1/2 -top-[24%] h-[150%] w-[120%] -translate-x-1/2"
+                  style={{ background: 'radial-gradient(40% 38% at 50% 40%, rgba(104,162,255,0.42), rgba(104,162,255,0.12) 46%, rgba(104,162,255,0) 74%)', filter: 'blur(24px)' }}
+                />
+                {/* Pedestal platform — large, wider than the card, brought
+                    forward (lower) so the stage reads as foreground. */}
+                <img src={pedestalUrl} alt="" className="absolute -bottom-2 left-1/2 z-0 w-[150%] max-w-none -translate-x-1/2" />
+                {/* Contact shadow where the card meets the pedestal. */}
+                <div
+                  className="pointer-events-none absolute bottom-[24%] left-1/2 z-[1] h-[17px] w-[52%] -translate-x-1/2 rounded-[50%]"
+                  style={{ background: 'radial-gradient(closest-side, rgba(0,4,16,0.7), rgba(0,4,16,0) 75%)', filter: 'blur(3px)' }}
+                />
+                {/* Standing card — sits on the pedestal, larger / foreground. */}
+                <motion.div
+                  initial={{ opacity: 0, y: -12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  className={`absolute z-10 drop-shadow-[0_20px_28px_rgba(0,6,22,0.6)] ${isPortraitArt(card) ? 'inset-x-0 mx-auto bottom-[24%] w-[58%] max-w-[138px]' : 'right-[2%] bottom-[27%] w-[76%] max-w-[150px]'}`}
+                >
+                  <CardArt card={card} bare floating />
+                </motion.div>
+              </div>
+
+              {/* LEFT: food cluster grounded with a soft shadow, resting on the
+                  same floor level as the pedestal, with a gap before it.
+                  Daily-commute art is lifted a touch higher (per-screen). */}
+              <div className="absolute left-0 z-20 w-[48%]" style={{ bottom: offerKey === 'daily-commute' ? '15%' : '5%' }}>
+                <div
+                  className="pointer-events-none absolute -bottom-1 left-1/2 h-[18px] w-[80%] -translate-x-1/2 rounded-[50%]"
+                  style={{ background: 'radial-gradient(closest-side, rgba(0,4,16,0.6), rgba(0,4,16,0) 75%)', filter: 'blur(5px)' }}
+                />
+                <motion.img
+                  key={lead.image}
+                  src={lead.image}
+                  alt={lead.eyebrow}
+                  initial={{ opacity: 0, y: 16, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative mx-auto block h-[208px] w-auto max-w-full object-contain object-bottom drop-shadow-[0_18px_24px_rgba(0,6,22,0.5)]"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className={`mx-auto mt-6 ${isPortraitArt(card) ? 'w-[37%] max-w-[138px]' : 'w-[80%] max-w-[300px]'}`}>
+              <motion.div initial={{ opacity: 0, y: 18, rotate: -2 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <CardArt card={card} bare floating />
+              </motion.div>
             </div>
           )}
+
+          {/* Product-first: benefit bullets. */}
           {!rewardFirst && bullets.length > 0 && (
             <ul className="mt-9 space-y-4">
               {bullets.map((b) => (
@@ -200,23 +367,10 @@ export default function CardDetail() {
             </ul>
           )}
 
-          {/* Reward teaser — product-first only; scrolls DOWN to the on-page
-              reward module, never routes to the form (section 3). */}
-          {!rewardFirst && reward && (
-            <button
-              onClick={() => scrollToId('reward')}
-              className="mt-7 flex w-full items-center gap-3 rounded-card bg-white/10 px-4 py-3 text-left ring-1 ring-white/15 hover:bg-white/15"
-            >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#F09252] text-[#3a1c00]">
-                <Icon.Spark size={18} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[11px] font-bold uppercase tracking-wide text-[#ffc499]">{reward.eyebrow}</span>
-                <span className="block truncate text-[14px] font-bold text-white">{reward.big}</span>
-              </span>
-              <Icon.Chevron size={18} className="shrink-0 text-white/70" />
-            </button>
-          )}
+          {/* Rolling benefits carousel — shown on both the product-first hero
+              and the offer/campaign hero (above Apply now), so every page
+              surfaces this card's rotating benefits. */}
+          <HeroRewardCarousel reward={reward} card={card} excludeKey={rewardFirst ? offerKey : null} onReward={rewardFirst} />
 
           {/* In-hero Apply Now (2.3) — the first, most important CTA. */}
           <Link
@@ -239,22 +393,19 @@ export default function CardDetail() {
         {/* Anchor links + T&Cs — same row, same styling. */}
         <div id="card-details" className="scroll-mt-4 mt-5 px-5">
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 pb-7 text-[12.5px] font-semibold text-sky">
-            {reward && <button onClick={() => scrollToId('reward')} className="hover:text-white">Rewards</button>}
+            {card.benefits && <button onClick={goToRewards} className="hover:text-white">Rewards</button>}
             <button onClick={() => scrollToId('eligibility')} className="hover:text-white">Eligibility</button>
-            <button onClick={() => scrollToId('fees')} className="hover:text-white">Fees &amp; charges</button>
+            <button onClick={() => scrollToId('fees')} className="hover:text-white">Fees</button>
             <a
               href={tcHref}
               {...(factsheet ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               className="hover:text-white"
             >
-              T&amp;Cs apply
+              T&amp;Cs
             </a>
           </div>
         </div>
       </div>
-
-      {/* Sign-up reward, ON the page — immediately after the hero (section 3). */}
-      {reward && <RewardModule reward={reward} card={card} />}
 
       {/* At a glance — table for cards with structured rows, else the 4-fact grid */}
       {card.glance ? (
@@ -307,7 +458,7 @@ export default function CardDetail() {
       {/* Benefits — restructured into tab-content by category with a
           how-it-works accordion (content-designer hierarchy) */}
       {card.benefits ? (
-        <BenefitsSection benefits={card.benefits} />
+        <BenefitsSection benefits={card.benefits} active={benefitsTab} onActive={setBenefitsTab} />
       ) : (
         <section id="benefits" className="scroll-mt-20 px-5 pt-7">
           <h2 className="font-display text-[19px] font-bold text-navy">Why this card</h2>
@@ -416,40 +567,133 @@ export default function CardDetail() {
   )
 }
 
-// On-page sign-up reward (section 3): the reward lives here on the page; the
-// hero CTA scrolls to it instead of routing away to the form. Shows the reward
-// AND its condition both legible (ONE Card "20% / first-quarter" caveat).
-function RewardModule({ reward, card }) {
-  const photo = rewardPhoto(reward.rewardImage)
-  return (
-    <section id="reward" className="scroll-mt-3 bg-[#0c2647] px-5 py-9 text-white">
-      <p className="inline-flex items-center gap-1.5 rounded-full bg-[#F09252] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[#3a1c00]">
-        <Icon.Spark size={13} /> {reward.eyebrow}
-      </p>
+// Hero reward carousel — mirrors the application flow's rolling reward strip.
+// Auto-rotates through the welcome offer/gift and the card's category-cashback
+// tiles (brand logos), with a persistent "Learn more" link below.
+function HeroRewardCarousel({ reward, card, excludeKey, onReward }) {
+  const navigate = useNavigate()
+  // "Learn more": on a product page it opens the reward-first hero variant for
+  // that category. On a reward/campaign page it scrolls down to the benefits
+  // section instead (hashtag-style in-page jump).
+  const learnMore = (s) => {
+    if (onReward) {
+      const el = document.getElementById('benefits')
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      return
+    }
+    const q = s.kind === 'tile' ? `?from=offer&offer=${offerSlug(s.tile.category)}` : '?from=offer'
+    navigate(`/cards/${card.slug}${q}`)
+    window.scrollTo(0, 0)
+  }
+  // Every category tile becomes a slide; tiles with partner logos show them,
+  // the rest fall back to a category-emoji tile so all cards stay populated.
+  // Skip the category the user is already viewing (excludeKey) to avoid repeating it.
+  const tiles = (card.applyTiles || []).filter((t) => offerSlug(t.category) !== excludeKey)
+  // The welcome-offer slide only when the card has a reward; every card with
+  // category tiles still gets the rolling carousel from those tiles alone.
+  const slides = [
+    ...(reward ? [{ key: 'reward', kind: 'reward' }] : []),
+    ...tiles.map((t, idx) => ({ key: `t${idx}`, kind: 'tile', tile: t })),
+  ]
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    if (slides.length <= 1) return undefined
+    const id = setInterval(() => setI((p) => (p + 1) % slides.length), 2800)
+    return () => clearInterval(id)
+  }, [slides.length])
 
-      <div className="mt-4 overflow-hidden rounded-card bg-white/[0.06] ring-1 ring-white/10">
-        {reward.rewardImage && (
-          <div className="grid aspect-[2.4/1] place-items-center overflow-hidden" style={{ background: REWARD_BG[reward.rewardImage] || REWARD_BG.cash }}>
-            {photo
-              ? <img src={photo} alt={reward.big} className="max-h-[80%] max-w-[55%] object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.4)]" />
-              : <span className="text-[56px]">{{ airpods: '🎧', miles: '✈️', luggage: '🧳', cash: '💵' }[reward.rewardImage] || '🎁'}</span>}
-          </div>
-        )}
-        <div className="p-5">
-          <h2 className="font-display text-[22px] font-extrabold leading-tight text-white">{reward.big}</h2>
-          <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">{reward.condition}</p>
-          {reward.endsSoon && reward.validUntil && (
-            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-uobred/20 px-3 py-1 text-[12px] font-bold text-[#ff9a9a]">
-              <Icon.Clock size={13} /> Ends {fmt(reward.validUntil)}
-            </p>
-          )}
-          <Link to={`/apply/${card.slug}`} className="btn-primary btn-lg mt-5 flex w-full bg-uobred hover:bg-uobred-600">
-            Apply &amp; claim this offer
-          </Link>
-        </div>
+  if (slides.length === 0) return null
+  const slide = slides[Math.min(i, slides.length - 1)]
+  const emoji = reward ? ({ airpods: '🎧', miles: '✈️', luggage: '🧳', cash: '💰' }[reward.rewardImage] || '🎁') : '🎁'
+
+  return (
+    <div className="mt-7 overflow-hidden rounded-card bg-white/[0.06] text-left ring-1 ring-white/10">
+      <div className="relative h-[100px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={slide.key}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.35 }}
+            className="absolute inset-0 flex items-center gap-3.5 p-3.5"
+          >
+            {slide.kind === 'reward' ? (
+              <>
+                {(() => {
+                  // Prefer a reward photo; for cash rewards use the cashback icon
+                  // (brand-cashback.png) on a clean light tile instead of an emoji.
+                  const art = rewardPhoto(reward.rewardImage) || (reward.rewardImage === 'cash' ? brandImg('cashback') : null)
+                  return (
+                    <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-tile p-1.5" style={{ background: art ? '#eef3fb' : (REWARD_BG[reward.rewardImage] || REWARD_BG.cash) }}>
+                      {art
+                        ? <img src={art} alt={reward.big} className="max-h-full max-w-full object-contain drop-shadow-[0_6px_14px_rgba(0,0,0,0.25)]" />
+                        : <span className="text-[30px] leading-none">{emoji}</span>}
+                    </div>
+                  )
+                })()}
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#ffc499]">{reward.eyebrow}</p>
+                  <h2 className="mt-0.5 font-display text-[17px] font-extrabold leading-tight text-white line-clamp-2">{reward.big}</h2>
+                  {reward.sub && <p className="mt-0.5 truncate text-[11.5px] leading-snug text-white/60">{reward.sub}</p>}
+                </div>
+              </>
+            ) : (
+              <>
+                {(() => {
+                  const logos = (slide.tile.brands || []).map((b) => ({ b, src: brandImg(b) })).filter((x) => x.src)
+                  return logos.length ? (
+                    <div className="grid h-16 w-16 shrink-0 place-items-center rounded-tile bg-white/90 px-2">
+                      <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1">
+                        {logos.map(({ b, src }) => (
+                          <img key={b} src={src} alt={b} className="h-5 w-auto max-w-[44px] object-contain" />
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid h-16 w-16 shrink-0 place-items-center rounded-tile" style={{ background: CATEGORY_TILE_BG }}>
+                      <span className="text-[30px] leading-none">{categoryEmoji(slide.tile.category)}</span>
+                    </div>
+                  )
+                })()}
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#ffc499]">{slide.tile.category}</p>
+                  <h2 className="mt-0.5 font-display text-[17px] font-extrabold leading-tight text-white">{slide.tile.value} {slide.tile.metric}</h2>
+                  {slide.tile.at && <p className="mt-0.5 truncate text-[11.5px] leading-snug text-white/60">{slide.tile.at}</p>}
+                </div>
+              </>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </section>
+
+      <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-0.5">
+        {slides.length > 1 ? (
+          <div className="flex gap-1.5">
+            {slides.map((s, d) => (
+              <span key={s.key} className={`h-1.5 rounded-full transition-all ${d === i ? 'w-4 bg-white' : 'w-1.5 bg-white/30'}`} />
+            ))}
+          </div>
+        ) : <span />}
+        <button
+          onClick={() => learnMore(slide)}
+          className="inline-flex items-center gap-1 text-[12px] font-semibold text-sky hover:text-white"
+        >
+          Learn more <Icon.Chevron size={14} className={onReward ? '' : '-rotate-90'} />
+        </button>
+      </div>
+    </div>
   )
+}
+
+// Derive each glance row's "Learn more" target from its label so every card
+// gets the deep links: fee rows → fees, income rows → eligibility, and every
+// earn row (cashback / rewards / miles / rebates / privileges) → benefits.
+const glanceLinkFor = (label) => {
+  const l = (label || '').toLowerCase()
+  if (l.includes('fee')) return 'fees'
+  if (l.includes('income') || l.includes('eligib')) return 'eligibility'
+  return 'benefits'
 }
 
 // 2.7 — "Card at a glance" as a mobile accordion. First (most important) row
@@ -491,6 +735,15 @@ function GlanceTable({ glance }) {
                         ))}
                       </ul>
                       {row.note && <p className="mt-2 text-[11.5px] text-slatey">{row.note}</p>}
+                      <button
+                        onClick={() => {
+                          const el = document.getElementById(row.link || glanceLinkFor(row.label))
+                          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }}
+                        className="mt-3 inline-flex items-center gap-1 text-[12.5px] font-semibold text-royal hover:text-royal-600"
+                      >
+                        Learn more <Icon.Chevron size={13} className="-rotate-90" />
+                      </button>
                     </div>
                   </motion.div>
                 )}
@@ -785,61 +1038,19 @@ function BenefitTabs({ tabs, tabKeys }) {
   )
 }
 
-// Auto-rotating feature highlights — the card's headline earn features rotate
-// in a carousel (Jun-10: "use a carousel so the user sees benefits rotating,
-// in the features section, not the hero").
-function FeatureCarousel({ tiles }) {
-  const [i, setI] = useState(0)
-  useEffect(() => {
-    if (tiles.length <= 1) return undefined
-    const id = setInterval(() => setI((p) => (p + 1) % tiles.length), 3200)
-    return () => clearInterval(id)
-  }, [tiles.length])
-  if (!tiles.length) return null
-  const t = tiles[Math.min(i, tiles.length - 1)]
-  return (
-    <div className="mt-5 overflow-hidden rounded-card bg-[linear-gradient(135deg,#0a2240,#143a6b)] text-white">
-      <div className="relative h-[118px]">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -18 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-0 flex flex-col justify-center px-5"
-          >
-            <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-sky">{t.title}</p>
-            <p className="mt-1.5 text-[16.5px] font-bold leading-snug text-white">{t.body}</p>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-      <div className="flex justify-center gap-1.5 pb-3">
-        {tiles.map((s, d) => (
-          <span key={s.title} className={`h-1.5 rounded-full transition-all ${d === i ? 'w-4 bg-white' : 'w-1.5 bg-white/30'}`} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 // Benefits restructured into category tabs. Cashback leads; each tab holds
 // labelled tiles. A collapsible "how you earn" accordion carries the long detail.
-function BenefitsSection({ benefits }) {
-  const [active, setActive] = useState(0)
-  const tab = benefits.tabs[active]
+function BenefitsSection({ benefits, active, onActive }) {
+  const tab = benefits.tabs[active] || benefits.tabs[0]
   return (
     <section id="benefits" className="scroll-mt-20 px-5 pt-8">
       <p className="eyebrow">{benefits.eyebrow}</p>
       <h2 className="mt-1.5 font-display text-[22px] font-bold leading-tight text-navy">{benefits.heading}</h2>
 
-      {/* Rotating highlights of the headline earn features. */}
-      <FeatureCarousel tiles={benefits.tabs[0].tiles.slice(0, 6)} />
-
       {/* Category tabs */}
       <div className="no-scrollbar mt-6 flex gap-2 overflow-x-auto">
         {benefits.tabs.map((t, i) => (
-          <button key={t.label} onClick={() => setActive(i)} className={`chip shrink-0 ${active === i ? 'chip-active' : ''}`}>
+          <button key={t.label} onClick={() => onActive(i)} className={`chip shrink-0 ${active === i ? 'chip-active' : ''}`}>
             {t.label}
           </button>
         ))}

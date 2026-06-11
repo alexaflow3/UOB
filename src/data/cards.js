@@ -26,7 +26,7 @@ export const CARDS = [
     // Product-page content hierarchy supplied by the content designer.
     hero: {
       eyebrow: 'UOB One Credit Card',
-      headline: 'Get the highest cashback on your daily spend',
+      headline: 'Up to 20% cashback on everyday spend',
       body: [
         'Up to 20% cashback at Grab, McDonald’s, Shopee and SimplyGo',
         '0.3% base cashback on all other spend — no minimum, no cap',
@@ -42,7 +42,7 @@ export const CARDS = [
     // renders as a clean text fallback.
     applyTiles: [
       { category: 'Dining', brands: ['mcdonalds', 'grabfood'], value: 'Up to 20%', metric: 'cashback', enhanced: true, at: 'at McDonald’s, GrabFood and Grab Dine Out Deals' },
-      { category: 'Daily Commute', brands: ['grab', 'simplygo'], value: 'Up to 20%', metric: 'cashback', enhanced: true, at: 'at Grab and SimplyGo (bus and train rides)' },
+      { category: 'Daily Commute', brands: ['grab', 'simplygo'], value: 'Up to 20%', metric: 'cashback', enhanced: true, at: 'on all your Grab and SimplyGo bus and train rides' },
       { category: 'Shopping', brands: ['shopee'], value: 'Up to 20%', metric: 'cashback', enhanced: true, at: 'at Shopee Singapore' },
       { category: 'Utilities', brands: ['spgroup'], value: 'Up to 4.33%', metric: 'cashback', at: 'at Singapore Power' },
       { category: 'Fuel', brands: ['shell', 'spc'], value: 'Up to 22.66%', metric: 'fuel savings', at: 'at Shell and SPC' },
@@ -50,6 +50,8 @@ export const CARDS = [
     // UDS promotion-banner — concise, max 100 chars incl. the inline link
     promoBanner: {
       text: 'Earn up to 20% cashback in your first quarter — double the standard rate.',
+      headline: 'Earn up to 20% cashback in your first quarter',
+      sub: 'Double the standard rate!',
       cta: 'Find out more',
     },
     glance: {
@@ -219,10 +221,10 @@ export const CARDS = [
     },
     heroLabels: ['Beauty & Wellness', 'Dining', 'Fashion', 'Family', 'Transport', 'Travel'],
     applyTiles: [
-      { category: 'Beauty & Wellness', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'when this is your chosen category' },
-      { category: 'Dining', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'when this is your chosen category' },
-      { category: 'Fashion', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'when this is your chosen category' },
-      { category: 'Travel', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'when this is your chosen category' },
+      { category: 'Beauty & Wellness', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'when this is your chosen earning category', offerHeadline: 'Get 4 miles per S$1' },
+      { category: 'Dining', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'when dining is your chosen earning category', offerHeadline: 'Get 4 miles per S$1' },
+      { category: 'Fashion', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'when fashion is your chosen earning category', offerHeadline: 'Get 4 miles per S$1' },
+      { category: 'Travel', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'when travel is your chosen earning category', offerHeadline: 'Get 4 miles per S$1' },
       { category: 'All other spend', value: '1X UNI$', metric: '· 0.4 mpd', at: 'earned automatically, no cap' },
     ],
     glance: {
@@ -351,10 +353,10 @@ export const CARDS = [
     },
     heroLabels: ['Mobile contactless', 'Online shopping', 'Streaming', 'Food delivery', 'Ride-hailing'],
     applyTiles: [
-      { category: 'Mobile Contactless', brands: ['applepay', 'googlepay'], value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'Apple Pay, Google Pay & UOB TMRW' },
-      { category: 'Entertainment', brands: ['netflix', 'spotify'], value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'streaming & online entertainment' },
-      { category: 'Food Delivery', brands: ['grabfood', 'foodpanda'], value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'GrabFood, Deliveroo & foodpanda' },
-      { category: 'Online Shopping', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'on selected online stores' },
+      { category: 'Mobile Contactless', brands: ['applepay', 'googlepay'], value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'whenever you use Apple Pay, Google Pay and UOB TMRW', offerHeadline: 'Get 4 miles per S$1' },
+      { category: 'Entertainment', brands: ['netflix', 'spotify'], value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'for all streaming and online entertainment', offerHeadline: 'Get 4 miles per S$1' },
+      { category: 'Food Delivery', brands: ['grabfood', 'foodpanda'], value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'whenever you spend on GrabFood, Deliveroo and foodpanda', offerHeadline: 'Get 4 miles per S$1' },
+      { category: 'Online Shopping', value: '10X UNI$', metric: '· 4 mpd', enhanced: true, at: 'on selected online stores', offerHeadline: 'Get 4 miles per S$1' },
       { category: 'All other spend', value: '1X UNI$', metric: '· 0.4 mpd', at: 'earned on everything else' },
     ],
     glance: {
@@ -478,9 +480,9 @@ export const CARDS = [
     },
     heroLabels: ['Singapore Airlines', 'Scoot', 'Dining', 'Food delivery', 'Online travel', 'Grab'],
     applyTiles: [
-      { category: 'Air Travel', brands: ['sia', 'scoot'], value: 'Up to 6', metric: 'miles/S$1', enhanced: true, at: 'SIA, Scoot & KrisShop' },
-      { category: 'Dining', value: 'Up to 3', metric: 'miles/S$1', at: 'dining & food delivery' },
-      { category: 'Online Travel', value: 'Up to 3', metric: 'miles/S$1', at: 'hotels & online bookings' },
+      { category: 'Air Travel', brands: ['sia', 'scoot'], value: 'Up to 6', metric: 'miles/S$1', enhanced: true, at: 'whenever you spend on SIA, Scoot and KrisShop', offerHeadline: 'Up to 6 miles per S$1' },
+      { category: 'Dining', value: 'Up to 3', metric: 'miles/S$1', at: 'whenever you spend on dining and food delivery', offerHeadline: 'Earn up to 3 miles per S$1' },
+      { category: 'Online Travel', value: 'Up to 3', metric: 'miles/S$1', at: 'whenever you make hotel and online bookings', offerHeadline: 'Earn up to 3 miles per S$1' },
       { category: 'All other spend', value: '1.2', metric: 'miles/S$1', at: 'KrisFlyer miles, no conversion' },
     ],
     glance: {
@@ -609,8 +611,8 @@ export const CARDS = [
     },
     heroLabels: ['Online shopping', 'Mobile contactless', 'Food delivery', 'Streaming', 'Ride-hailing'],
     applyTiles: [
-      { category: 'Online Shopping', value: '8%', metric: 'cashback', enhanced: true, at: 'on all your online spend' },
-      { category: 'Mobile Contactless', brands: ['applepay', 'googlepay'], value: '8%', metric: 'cashback', enhanced: true, at: 'Apple Pay, Google Pay & more' },
+      { category: 'Online Shopping', value: '8%', metric: 'cashback', enhanced: true, at: 'on all your online spend', offerHeadline: 'Earn 8% cashback' },
+      { category: 'Mobile Contactless', brands: ['applepay', 'googlepay'], value: '8%', metric: 'cashback', enhanced: true, at: 'whenever you use Apple Pay, Google Pay and more', offerHeadline: 'Earn 8% cashback' },
       { category: 'All other spend', value: '0.3%', metric: 'cashback', at: 'earned on everything else' },
     ],
     glance: {
@@ -734,8 +736,8 @@ export const CARDS = [
     },
     heroLabels: ['Flights', 'Hotels', 'UOB Travel', 'Overseas spend', 'Local spend', 'Airport limo'],
     applyTiles: [
-      { category: 'Flights & Hotels', brands: ['uobtravel'], value: 'Up to 6', metric: 'miles/S$1', enhanced: true, at: 'booked via UOB Travel' },
-      { category: 'Overseas Spend', value: '2.4', metric: 'miles/S$1', at: 'all foreign-currency spend' },
+      { category: 'Flights & Hotels', brands: ['uobtravel'], value: 'Up to 6', metric: 'miles/S$1', enhanced: true, at: 'whenever you make a booking via UOB Travel', offerHeadline: 'Earn up to 6 miles per S$1' },
+      { category: 'Overseas Spend', value: '2.4', metric: 'miles/S$1', at: 'on all foreign currency spend', offerHeadline: 'Earn 2.4 miles per S$1' },
       { category: 'Local Spend', value: '1.4', metric: 'miles/S$1', at: 'everyday spend in Singapore' },
     ],
     glance: {
@@ -864,7 +866,7 @@ export const CARDS = [
     heroLabels: ['Everyday spend', 'Groceries', 'Dining', 'Online', 'Transport', 'Overseas'],
     applyTiles: [
       { category: 'Almost everything', value: '1.7%', metric: 'cashback', at: 'no minimum, no cap, no categories' },
-      { category: 'Public Transport', brands: ['simplygo'], value: '20%', metric: 'cashback', enhanced: true, at: 'SimplyGo bus & train rides' },
+      { category: 'Public Transport', brands: ['simplygo'], value: '20%', metric: 'cashback', enhanced: true, at: 'on all SimplyGo bus and train rides', offerHeadline: 'Get 20% cashback' },
       { category: 'Excluded spend', value: '0.3%', metric: 'cashback', at: 'NETS & a few categories' },
     ],
     glance: {
@@ -974,7 +976,7 @@ export const CARDS = [
     applyTiles: [
       { category: 'Lazada', value: 'Up to 20%', metric: 'rebate', enhanced: true, at: 'at Lazada Singapore' },
       { category: 'RedMart', value: '6%', metric: 'rebate', enhanced: true, at: 'groceries on RedMart' },
-      { category: 'Dining & Transport', value: '5%', metric: 'rebate', at: 'dining, entertainment & transport' },
+      { category: 'Dining & Transport', value: '5%', metric: 'rebate', at: 'on all dining, entertainment and transport spend', offerHeadline: 'Get 5% rebate' },
       { category: 'All other spend', value: '0.3%', metric: 'rebate', at: 'paid as Lazada Gift Card credit' },
     ],
     glance: {
@@ -1082,10 +1084,10 @@ export const CARDS = [
     },
     heroLabels: ['Overseas spend', 'Local spend', 'Airport lounges', 'Travel insurance', 'Golf', 'Concierge'],
     applyTiles: [
-      { category: 'Overseas Spend', value: '2.4', metric: 'miles/S$1', enhanced: true, at: 'all foreign-currency spend' },
+      { category: 'Overseas Spend', value: '2.4', metric: 'miles/S$1', enhanced: true, at: 'on all foreign currency spend', offerHeadline: 'Earn 2.4 miles per S$1' },
       { category: 'Local Spend', value: '1.4', metric: 'miles/S$1', at: 'everyday spend in Singapore' },
       { category: 'Airport Lounges', brands: ['dragonpass'], value: '12 visits', metric: 'a year', at: 'complimentary via DragonPass' },
-      { category: 'Travel Cover', value: 'US$1M', metric: 'protection', at: 'travel personal-accident cover' },
+      { category: 'Travel Cover', value: 'US$1M', metric: 'protection', at: 'your all-in-one travel personal accident cover', offerHeadline: 'Get US$1 million protection' },
     ],
     glance: {
       heading: 'UOB Visa Infinite Metal Card at a glance',

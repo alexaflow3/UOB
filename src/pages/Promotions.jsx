@@ -60,8 +60,9 @@ export default function Promotions() {
               className="surface overflow-hidden"
             >
               {/* Reward is the hero, with the card face overlaid (3.1) so the
-                  reward is visually tied to the card you'd be applying for. */}
-              <div className="relative aspect-[2/1] w-full overflow-hidden" style={{ background: r.bg }}>
+                  reward is visually tied to the card you'd be applying for.
+                  Tapping it opens the card's offer/reward page (pedestal hero). */}
+              <Link to={`/cards/${p.cards[0]}?from=offer`} className="relative block aspect-[2/1] w-full overflow-hidden" style={{ background: r.bg }}>
                 <div className="absolute inset-0 grid place-items-center">
                   {rewardImg(p.rewardImage) ? (
                     <img
@@ -93,7 +94,7 @@ export default function Promotions() {
                     className={`${fullHeight ? 'h-[78px]' : 'h-[58px]'} w-auto object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.35)]`}
                   />
                 </div>
-              </div>
+              </Link>
 
               <div className="p-4">
                 {/* 3.2 — gift name (+ worth) in the headline; description carries
@@ -117,7 +118,7 @@ export default function Promotions() {
                   {p.cards.map((slug) => {
                     const c = cardBySlug(slug)
                     return (
-                      <Link key={slug} to={`/cards/${slug}`} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[12px] font-semibold text-navy transition-colors hover:border-royal hover:text-royal">
+                      <Link key={slug} to={`/cards/${slug}?from=offer`} className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-[12px] font-semibold text-navy transition-colors hover:border-royal hover:text-royal">
                         {c.name.replace('UOB ', '')}
                         <Icon.Arrow size={13} />
                       </Link>

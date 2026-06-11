@@ -21,6 +21,7 @@ export default function Apply() {
   const navigate = useNavigate()
   const card = cardBySlug(slug)
   const [step, setStep] = useState(0)
+  const [fatca, setFatca] = useState(false)
   if (!card) return <Navigate to="/" replace />
 
   const minsLeft = TIME_PER_STEP.slice(step).reduce((a, b) => a + b, 0)
@@ -58,22 +59,60 @@ export default function Apply() {
         </div>
       </header>
 
-      {/* Persistent reward carousel — stays mounted (and rolling) across every
-          step so the reason to want the card never leaves the screen. */}
+      {/* Card you're applying for — sits above the carousel, persistent. */}
       <div className="px-5 pt-5">
+        <section className="flex items-center gap-3.5 rounded-card bg-sky-soft p-3.5 ring-1 ring-royal/15">
+          <div className="w-[30%] max-w-[110px] shrink-0"><CardArt card={card} /></div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-royal">You’re applying for</p>
+            <h1 className="mt-0.5 font-display text-[16px] font-extrabold leading-tight text-navy">{card.name}</h1>
+            <p className="mt-0.5 text-[12.5px] leading-snug text-slatey">{card.headline}</p>
+          </div>
+        </section>
+      </div>
+
+      {/* Persistent reward carousel — stays mounted (and rolling) across every
+          step so the reason to want the card never leaves the screen. Sits
+          below the card identity. */}
+      <div className="px-5 pt-4">
         <RewardCarousel card={card} />
       </div>
 
-      <div className="px-5 pb-6 pt-5">
+      <div className={`px-5 pt-5 ${step === 0 ? 'pb-[184px]' : 'pb-6'}`}>
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
-            {step === 0 && <StepEligibility card={card} onSingpass={() => setStep(1)} onManual={() => setStep(2)} />}
-            {step === 1 && <StepMethod card={card} onBack={() => setStep(0)} onNext={() => setStep(2)} />}
+            {step === 0 && <StepEligibility card={card} fatca={fatca} setFatca={setFatca} />}
+            {step === 1 && <StepMethod onBack={() => setStep(0)} onNext={() => setStep(2)} />}
             {step === 2 && <StepDetails onBack={() => setStep(1)} onNext={() => setStep(3)} />}
             {step === 3 && <StepReview card={card} onBack={() => setStep(2)} />}
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Sticky shelf — the two application routes float at the bottom on the
+          eligibility step, gated on the FATCA confirmation. */}
+      {step === 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur">
+          <div className="mx-auto max-w-[460px] space-y-2.5">
+            <button
+              onClick={() => setStep(1)}
+              disabled={!fatca}
+              className="btn btn-lg w-full gap-2 bg-[#F4333D] text-white hover:bg-[#e02b35] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#F4333D]"
+            >
+              Retrieve my info with <SingpassMark />
+            </button>
+            <button
+              onClick={() => setStep(2)}
+              disabled={!fatca}
+              className="btn btn-lg w-full gap-2 text-white hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-40"
+              style={{ background: 'linear-gradient(135deg,#5b9bf5,#3f86e8)' }}
+            >
+              Existing customer? Log in with
+              <img src={uobLogo} alt="UOB" className="h-[17px] w-auto" style={{ filter: 'brightness(0) invert(1)' }} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -357,27 +396,31 @@ function RewardCarousel({ card }) {
 const SINGPASS_LOGO = import.meta.glob('../assets/singpass-logo.{svg,png}', { eager: true, import: 'default' })
 function SingpassMark() {
   const logo = SINGPASS_LOGO['../assets/singpass-logo.svg'] || SINGPASS_LOGO['../assets/singpass-logo.png']
-  if (logo) return <img src={logo} alt="Singpass" className="h-[19px] w-auto" />
+  if (logo) return <img src={logo} alt="Singpass" className="h-[16px] w-auto translate-y-[2px]" />
   return <span className="font-display text-[17px] font-extrabold lowercase tracking-[-0.01em]">singpass</span>
 }
 
-function StepEligibility({ card, onSingpass, onManual }) {
+function StepEligibility({ card, fatca, setFatca }) {
   const docs = ['NRIC (front & back)', 'Latest income proof or CPF statement', 'Singpass login']
 
   return (
     <div className="space-y-5">
-      {/* Card identity (the persistent reward carousel sits above, in Apply) */}
-      <section className="flex items-center gap-3.5 rounded-card bg-sky-soft p-3.5 ring-1 ring-royal/15">
-        <div className="w-[34%] max-w-[120px] shrink-0"><CardArt card={card} /></div>
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-royal">You’re applying for</p>
-          <h1 className="mt-0.5 font-display text-[16px] font-extrabold leading-tight text-navy">{card.name}</h1>
-          <p className="mt-0.5 text-[12.5px] leading-snug text-slatey">{card.headline}</p>
-        </div>
-      </section>
-
-      {/* 3. Have these ready */}
+      {/* Eligibility first, then a divider into the documents you'll need —
+          both within one card. */}
       <section className="rounded-card bg-white p-5 ring-1 ring-line/70">
+        <h2 className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wide text-slatey">
+          <Icon.Shield size={16} /> You’re eligible to apply if you are
+        </h2>
+        <ul className="mt-3 space-y-2.5">
+          {[`${card.eligibility.residency} aged ${card.eligibility.age}+`, `Earning at least ${card.eligibility.income} a year`].map((d) => (
+            <li key={d} className="flex items-center gap-2.5 text-[14px] text-ink">
+              <span className="h-1.5 w-1.5 rounded-full bg-royal" /> {d}
+            </li>
+          ))}
+        </ul>
+
+        <div className="my-4 border-t border-line/70" />
+
         <h2 className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wide text-slatey">
           <Icon.Doc size={16} /> To apply, you’ll need
         </h2>
@@ -388,37 +431,42 @@ function StepEligibility({ card, onSingpass, onManual }) {
             </li>
           ))}
         </ul>
-        <p className="mt-3 border-t border-line/70 pt-3 text-[12px] leading-snug text-slatey">
-          Eligibility: {card.eligibility.residency} aged {card.eligibility.age}+, earning at least {card.eligibility.income}/year.
-        </p>
       </section>
 
-      {/* 4. Two unmistakably different routes — the official Singpass button
-          (everyone) vs a UOB-styled existing-customer button. No manual route. */}
-      <div className="space-y-3">
-        <button
-          onClick={onSingpass}
-          className="btn btn-lg w-full gap-2 bg-[#F4333D] text-white hover:bg-[#e02b35]"
-        >
-          Retrieve my info with <SingpassMark />
-        </button>
-        <button
-          onClick={onManual}
-          className="btn btn-lg w-full text-white hover:brightness-105"
-          style={{ background: 'linear-gradient(135deg,#5b9bf5,#3f86e8)' }}
-        >
-          Existing customer? Log in with UOB
-        </button>
-        <p className="text-center text-[12px] leading-snug text-slatey">
-          New to UOB? Singpass pre-fills your details from Myinfo. Already bank with UOB? Log in with internet banking.
+      {/* FATCA "Before you continue" — tax-residency declaration up front,
+          gates the two application routes below. */}
+      <section className="rounded-card bg-white p-5 ring-1 ring-line/70">
+        <h2 className="font-display text-[16px] font-extrabold text-navy">Before you continue</h2>
+        <p className="mt-2 text-[13px] leading-relaxed text-ink">
+          Keeping our financial system safe matters to us, so we’re committed to being{' '}
+          <span className="font-semibold text-royal underline underline-offset-2">FATCA compliant</span>. This means we must report accounts held by U.S. persons to the Inland Revenue Authority of Singapore (IRAS).
         </p>
-      </div>
+        <p className="mt-3 text-[12.5px] font-semibold text-slatey">Please confirm that:</p>
+        <ul className="mt-2 space-y-1.5">
+          {['You are not a U.S. citizen, U.S. resident or U.S. green card holder.', 'You have not spent a significant number of days in the U.S. each year.'].map((t) => (
+            <li key={t} className="flex gap-2.5 text-[13px] leading-snug text-ink">
+              <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-royal" /> {t}
+            </li>
+          ))}
+        </ul>
+        <button
+          onClick={() => setFatca((v) => !v)}
+          className={`mt-4 flex w-full items-start gap-3 rounded-tile border p-3 text-left transition-colors ${fatca ? 'border-royal bg-sky-soft' : 'border-line bg-white'}`}
+        >
+          <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 ${fatca ? 'border-royal bg-royal text-white' : 'border-line'}`}>
+            {fatca && <Icon.Check size={13} />}
+          </span>
+          <span className="text-[13px] font-semibold leading-snug text-navy">
+            I confirm the above — I am not a U.S. person for tax purposes.
+          </span>
+        </button>
+      </section>
     </div>
   )
 }
 
 /* ---------- Step 2: How would you like to apply? ---------- */
-function StepMethod({ card, onBack, onNext }) {
+function StepMethod({ onBack, onNext }) {
   const [method, setMethod] = useState(null)
   const [showFine, setShowFine] = useState(false)
   const ready = Boolean(method)
@@ -446,18 +494,6 @@ function StepMethod({ card, onBack, onNext }) {
 
   return (
     <div className="space-y-5">
-      {/* You're applying for */}
-      <section className="rounded-card bg-sky-soft p-4 ring-1 ring-royal/15">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-royal">You’re applying for</p>
-        <div className="mt-2 flex items-center gap-3.5">
-          <div className="w-[44%] max-w-[150px] shrink-0"><CardArt card={card} /></div>
-          <div className="min-w-0">
-            <h1 className="font-display text-[16px] font-extrabold leading-tight text-navy">{card.name}</h1>
-            <p className="mt-0.5 text-[13px] leading-snug text-slatey">{card.headline}</p>
-          </div>
-        </div>
-      </section>
-
       <div>
         <h2 className="font-display text-[18px] font-extrabold text-navy">How would you like to apply?</h2>
         <p className="mt-1 text-[13.5px] text-slatey">Pick the option that fits — we’ll take it from there.</p>
@@ -536,10 +572,9 @@ function StepMethod({ card, onBack, onNext }) {
 function StepDetails({ onBack, onNext }) {
   const [form, setForm] = useState({ name: 'TAN WEI MING', nric: '', income: '', email: '', mobile: '' })
   const [touched, setTouched] = useState({})
-  const [fatca, setFatca] = useState(false)
 
   const errors = useMemo(() => validate(form), [form])
-  const valid = Object.keys(errors).length === 0 && fatca
+  const valid = Object.keys(errors).length === 0
   const mark = (k) => setTouched((t) => ({ ...t, [k]: true }))
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
 
@@ -554,24 +589,6 @@ function StepDetails({ onBack, onNext }) {
       <Field label="Annual income (S$)" value={form.income} placeholder="e.g. 48000" inputMode="numeric" onChange={(v) => set('income', v.replace(/[^\d]/g, ''))} onBlur={() => mark('income')} error={touched.income && errors.income} hint="Before CPF deductions" />
       <Field label="Email" value={form.email} placeholder="you@email.com" inputMode="email" onChange={(v) => set('email', v)} onBlur={() => mark('email')} error={touched.email && errors.email} />
       <Field label="Mobile number" value={form.mobile} placeholder="9123 4567" inputMode="tel" prefix="+65" onChange={(v) => set('mobile', v.replace(/[^\d]/g, '').slice(0, 8))} onBlur={() => mark('mobile')} error={touched.mobile && errors.mobile} />
-
-      {/* Tax-residency (FATCA) declaration — now post-login, once committed,
-          framed as a quick confirmation rather than a pre-login gate. */}
-      <div className="rounded-card bg-white p-4 ring-1 ring-line/70">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-slatey">Tax residency</p>
-        <button
-          onClick={() => setFatca((v) => !v)}
-          className={`mt-3 flex w-full items-start gap-3 rounded-tile border p-3 text-left transition-colors ${fatca ? 'border-royal bg-sky-soft' : 'border-line bg-white'}`}
-        >
-          <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 ${fatca ? 'border-royal bg-royal text-white' : 'border-line'}`}>
-            {fatca && <Icon.Check size={13} />}
-          </span>
-          <span className="text-[13px] leading-snug text-navy">
-            I confirm I am not a U.S. person for tax purposes.{' '}
-            <span className="font-semibold text-royal underline underline-offset-2">What does this mean?</span>
-          </span>
-        </button>
-      </div>
 
       <div className="flex gap-3 pt-1">
         <button onClick={onBack} className="btn-secondary btn-lg flex-1">Back</button>
