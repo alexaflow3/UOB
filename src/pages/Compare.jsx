@@ -87,6 +87,12 @@ export default function Compare() {
                   <th key={c.slug} className="px-2 align-bottom">
                     <div className="mx-auto flex w-3/4 items-end justify-center"><CardArt card={c} /></div>
                     <p className="mt-2 text-[12px] font-bold leading-tight text-navy">{c.name.replace('UOB ', '')}</p>
+                    <Link
+                      to={`/apply/${c.slug}`}
+                      className="btn-primary mx-auto mt-2 flex w-full max-w-[120px] items-center justify-center rounded-full bg-uobred px-3 py-1.5 text-[12px] font-bold hover:bg-uobred-600"
+                    >
+                      Apply
+                    </Link>
                   </th>
                 ))}
               </tr>
@@ -108,8 +114,7 @@ export default function Compare() {
                 <td />
                 {selected.map((c) => (
                   <td key={c.slug} className="px-2 pt-3">
-                    <Link to={`/apply/${c.slug}`} className="btn-primary btn-md flex w-full bg-uobred hover:bg-uobred-600">Apply</Link>
-                    <Link to={`/cards/${c.slug}`} className="btn-ghost btn-md mt-1.5 flex w-full text-[12px]">Details</Link>
+                    <Link to={`/cards/${c.slug}`} className="btn-ghost btn-md flex w-full text-[12px]">View details</Link>
                   </td>
                 ))}
               </tr>

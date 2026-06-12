@@ -144,20 +144,21 @@ export default function CardDetail() {
   const heroCtaRef = useRef(null)
   const [showSticky, setShowSticky] = useState(false)
   useEffect(() => {
-    const el = heroCtaRef.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      // Only show the sticky bar once the hero CTA has scrolled ABOVE the
-      // viewport (passed it going down) — not while it's still below the fold
-      // on first load. Read the live rect so the bottom-edge check is current.
-      ([entry]) => {
-        const node = heroCtaRef.current
-        setShowSticky(!entry.isIntersecting && !!node && node.getBoundingClientRect().bottom <= 0)
-      },
-      { threshold: 0 },
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
+    // Show the sticky bar once the hero CTA has scrolled ABOVE the viewport.
+    // A capturing scroll listener catches scroll from BOTH the window (mobile)
+    // and the inner phone-frame <main> (desktop) — IntersectionObserver was
+    // unreliable across those two scroll contexts. Read the live rect each time.
+    const update = () => {
+      const node = heroCtaRef.current
+      setShowSticky(!!node && node.getBoundingClientRect().bottom <= 0)
+    }
+    update()
+    window.addEventListener('scroll', update, true)
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', update, true)
+      window.removeEventListener('resize', update)
+    }
   }, [slug])
 
   // Value-prop H1 + card-name eyebrow, whether or not a bespoke `hero` exists.
