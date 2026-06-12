@@ -89,7 +89,7 @@ export default function Compare() {
                     <p className="mt-2 text-[12px] font-bold leading-tight text-navy">{c.name.replace('UOB ', '')}</p>
                     <Link
                       to={`/apply/${c.slug}`}
-                      className="btn-primary mx-auto mt-2 flex w-full max-w-[120px] items-center justify-center rounded-full bg-uobred px-3 py-1.5 text-[12px] font-bold hover:bg-uobred-600"
+                      className="btn-primary mx-auto mt-2 flex h-8 w-full max-w-[120px] items-center justify-center bg-uobred px-3 text-[12px] font-bold hover:bg-uobred-600"
                     >
                       Apply
                     </Link>
