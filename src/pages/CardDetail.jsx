@@ -149,8 +149,11 @@ export default function CardDetail() {
     const obs = new IntersectionObserver(
       // Only show the sticky bar once the hero CTA has scrolled ABOVE the
       // viewport (passed it going down) — not while it's still below the fold
-      // on first load.
-      ([entry]) => setShowSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      // on first load. Read the live rect so the bottom-edge check is current.
+      ([entry]) => {
+        const node = heroCtaRef.current
+        setShowSticky(!entry.isIntersecting && !!node && node.getBoundingClientRect().bottom <= 0)
+      },
       { threshold: 0 },
     )
     obs.observe(el)
