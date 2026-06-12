@@ -26,7 +26,7 @@ export const CARDS = [
     // Product-page content hierarchy supplied by the content designer.
     hero: {
       eyebrow: 'UOB One Credit Card',
-      headline: 'Up to 20% cashback on everyday spend',
+      headline: 'Get the highest cashback on your daily spend',
       body: [
         'Up to 20% cashback at Grab, McDonald’s, Shopee and SimplyGo',
         '0.3% base cashback on all other spend — no minimum, no cap',
