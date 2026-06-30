@@ -414,12 +414,6 @@ export default function CardDetail() {
         </div>
       </div>
 
-      {/* Already have this card? — existing-customer servicing component (Stage 2
-          response). One designated, consistent spot on EVERY card page: lower
-          priority than Apply, always visible, deep-linking the cardholder
-          straight to their task. */}
-      <AlreadyHaveCard card={card} onOpen={goToRewards} />
-
       {/* At a glance — table for cards with structured rows, else the 4-fact grid */}
       {card.glance ? (
         <GlanceTable glance={card.glance} />
@@ -434,6 +428,12 @@ export default function CardDetail() {
           </div>
         </section>
       )}
+
+      {/* Already have this card? — existing-customer servicing component (Stage 2
+          response). One designated, consistent spot on EVERY card page, right
+          after the at-a-glance summary: lower priority than Apply but always
+          visible, deep-linking the cardholder straight to their task. */}
+      <AlreadyHaveCard card={card} onOpen={goToRewards} />
 
       {/* Value prop + fit — one consolidated section: the lifestyle hook flows
           straight into an honest "is this card right for you?" verdict and the
@@ -1180,37 +1180,33 @@ function servicingConfig(card) {
 function AlreadyHaveCard({ card, onOpen }) {
   const cfg = servicingConfig(card)
   return (
-    <section className="px-5 pt-6">
-      <div className="rounded-card border-2 border-royal bg-sky-soft p-4 shadow-[0_10px_30px_-14px_rgba(0,94,184,0.5)]">
-        <div className="flex items-start gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-royal">Already have this card?</p>
-            <h2 className="mt-0.5 font-display text-[15.5px] font-bold leading-tight text-navy">{cfg.title}</h2>
-            <p className="mt-1 text-[12.5px] leading-snug text-slatey">
-              The same place on every card page — jump straight to your task.
-            </p>
+    <section className="px-5 pt-10">
+      <h2 className="font-display text-[20px] font-bold leading-tight text-navy">Already have this card?</h2>
+      <p className="mt-1.5 text-[13.5px] leading-snug text-slatey">
+        The same place on every card page — jump straight to your task.
+      </p>
+      <div className="mt-4 overflow-hidden rounded-card bg-white ring-1 ring-line/70">
+        <div className="flex items-center justify-between gap-3 px-5 py-4">
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-slatey">For existing cardholders</p>
+            <p className="mt-0.5 text-[15px] font-bold leading-snug text-navy">{cfg.title}</p>
           </div>
-          <button onClick={onOpen} className="shrink-0 rounded-btn bg-royal px-5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-royal-700">
-            Open
+          <button onClick={onOpen} className="btn-secondary btn-md shrink-0">
+            Open <Icon.Chevron size={14} className="-rotate-90" />
           </button>
         </div>
         {cfg.chips.length > 0 && (
-          <div className="mt-3.5 rounded-tile border border-royal/30 bg-white p-3">
+          <div className="border-t border-line/70 px-5 py-4">
             <p className="text-[11px] font-bold uppercase tracking-wide text-slatey">{cfg.panelLabel}</p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="mt-2.5 flex flex-wrap gap-2">
               {cfg.chips.map((c) => (
-                <span
-                  key={c}
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                    c === cfg.selected ? 'bg-royal text-white' : 'border border-line bg-mist text-slatey'
-                  }`}
-                >
-                  {c === cfg.selected && '✓ '}
+                <span key={c} className={c === cfg.selected ? 'chip chip-active' : 'chip'}>
+                  {c === cfg.selected && <Icon.Check size={13} />}
                   {c}
                 </span>
               ))}
             </div>
-            <p className="mt-2.5 text-[12px] leading-snug text-ink">{cfg.earnLine}</p>
+            <p className="mt-3 text-[13px] leading-relaxed text-ink">{cfg.earnLine}</p>
           </div>
         )}
       </div>
