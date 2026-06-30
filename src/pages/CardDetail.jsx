@@ -1178,51 +1178,67 @@ function servicingOptions(card, { goToRewards, scrollToId }) {
 
 function AlreadyHaveCard({ card, goToRewards, scrollToId }) {
   const items = servicingOptions(card, { goToRewards, scrollToId })
+  // Collapsed by default so the existing-customer lane is present and recognisable
+  // without adding a second tall block beneath "at a glance". Tap the banner to
+  // reveal the quick actions — same accordion behaviour as the glance table.
+  const [open, setOpen] = useState(false)
   return (
     <section className="px-5 pt-10">
-      {/* A distinct servicing module — its own dark-blue banner + light-blue body
-          set it apart from the white product page, the way banking apps surface
-          an "account quick actions" panel. Existing-customer territory. */}
       <div className="overflow-hidden rounded-card shadow-tile ring-1 ring-royal/15">
-        {/* Dark-blue banner header */}
-        <div className="relative overflow-hidden bg-[linear-gradient(120deg,#00237b_0%,#004585_58%,#005eb8_100%)] px-5 py-4 text-white">
+        {/* Dark-blue banner — also the accordion toggle */}
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="relative flex w-full items-center gap-3.5 overflow-hidden bg-[linear-gradient(120deg,#00237b_0%,#004585_58%,#005eb8_100%)] px-5 py-4 text-left text-white"
+        >
           <div
             className="pointer-events-none absolute inset-0 opacity-80"
             style={{ background: 'radial-gradient(120% 130% at 92% -25%, rgba(0,132,255,0.45), transparent 60%)' }}
           />
-          <div className="relative flex items-center gap-3.5">
-            <div className="w-[46px] shrink-0">
-              <CardArt card={card} floating />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-display text-[18px] font-extrabold leading-tight">Already have this card?</h3>
-              <p className="mt-1 text-[12.5px] font-medium leading-snug text-sky">Jump straight to a common task.</p>
-            </div>
+          <div className="relative w-[46px] shrink-0">
+            <CardArt card={card} floating />
           </div>
-        </div>
-        {/* Light-blue body — quick actions as white tiles */}
-        <div className="space-y-2 bg-sky-soft p-3">
-          {items.map((it) => {
-            const ItIcon = (it.icon && Icon[it.icon]) || Icon.Spark
-            return (
-              <button
-                key={it.label}
-                onClick={it.onClick}
-                className="flex w-full items-center gap-3 rounded-tile bg-white px-3.5 py-3 text-left shadow-[0_1px_2px_rgba(0,35,123,0.06)] ring-1 ring-line/60 transition-all hover:-translate-y-px hover:shadow-tile hover:ring-royal/40"
-              >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sky-soft text-royal">
-                  <ItIcon size={17} />
-                </span>
-                <span className="min-w-0 flex-1 text-[13.5px] font-semibold leading-snug text-navy">{it.label}</span>
-                {it.value && (
-                  <span className="shrink-0 rounded-full bg-navy px-2 py-0.5 text-[10px] font-bold text-white">{it.value}</span>
-                )}
-                {it.hint && <span className="shrink-0 text-[9.5px] font-bold uppercase tracking-wide text-slatey">{it.hint}</span>}
-                <Icon.Chevron size={16} className="-rotate-90 shrink-0 text-royal" />
-              </button>
-            )
-          })}
-        </div>
+          <div className="relative min-w-0 flex-1">
+            <h3 className="font-display text-[18px] font-extrabold leading-tight">Already have this card?</h3>
+            <p className="mt-1 text-[12.5px] font-medium leading-snug text-sky">Manage rewards, balance &amp; more.</p>
+          </div>
+          <Icon.Chevron size={20} className={`relative shrink-0 text-white/80 transition-transform ${open ? 'rotate-180' : ''}`} />
+        </button>
+        {/* Light-blue body — quick actions as white tiles, revealed on expand */}
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="space-y-2 bg-sky-soft p-3">
+                {items.map((it) => {
+                  const ItIcon = (it.icon && Icon[it.icon]) || Icon.Spark
+                  return (
+                    <button
+                      key={it.label}
+                      onClick={it.onClick}
+                      className="flex w-full items-center gap-3 rounded-tile bg-white px-3.5 py-3 text-left shadow-[0_1px_2px_rgba(0,35,123,0.06)] ring-1 ring-line/60 transition-all hover:-translate-y-px hover:shadow-tile hover:ring-royal/40"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sky-soft text-royal">
+                        <ItIcon size={17} />
+                      </span>
+                      <span className="min-w-0 flex-1 text-[13.5px] font-semibold leading-snug text-navy">{it.label}</span>
+                      {it.value && (
+                        <span className="shrink-0 rounded-full bg-navy px-2 py-0.5 text-[10px] font-bold text-white">{it.value}</span>
+                      )}
+                      {it.hint && <span className="shrink-0 text-[9.5px] font-bold uppercase tracking-wide text-slatey">{it.hint}</span>}
+                      <Icon.Chevron size={16} className="-rotate-90 shrink-0 text-royal" />
+                    </button>
+                  )
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   )
