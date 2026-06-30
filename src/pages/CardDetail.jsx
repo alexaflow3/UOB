@@ -414,6 +414,12 @@ export default function CardDetail() {
         </div>
       </div>
 
+      {/* Already have this card? — existing-customer servicing component (Stage 2
+          response). One designated, consistent spot on EVERY card page: lower
+          priority than Apply, always visible, deep-linking the cardholder
+          straight to their task. */}
+      <AlreadyHaveCard card={card} onOpen={goToRewards} />
+
       {/* At a glance — table for cards with structured rows, else the 4-fact grid */}
       {card.glance ? (
         <GlanceTable glance={card.glance} />
@@ -1137,6 +1143,81 @@ function Faq({ q, a, defaultOpen }) {
 
 // Sticky footer (2.5): card face (left) · two key benefits (centre) · Apply
 // (right). No full card name — the face already identifies the card.
+// "Already have this card?" — the existing-customer servicing component.
+// Card-aware: Lady's-style cards (where the holder picks a bonus category each
+// quarter) get the category toggle; cashback/miles cards surface their bonus
+// categories read-only with a deep-link to rewards. Same component, same spot,
+// every card page.
+function servicingConfig(card) {
+  if (card.slug === 'ladys-card') {
+    return {
+      title: 'Change your rewards category',
+      panelLabel: 'Your 10X category this quarter',
+      chips: ['Beauty & Wellness', 'Dining', 'Fashion', 'Family', 'Transport', 'Travel'],
+      selected: 'Dining',
+      earnLine: (
+        <>
+          You're earning <b className="text-navy">10X UNI$ (4 miles / S$1)</b> on Dining. Switch any quarter in UOB&nbsp;TMRW.
+        </>
+      ),
+    }
+  }
+  // Default — surface this card's bonus categories and deep-link to rewards.
+  const chips = (card.heroLabels || []).slice(0, 6)
+  return {
+    title: 'View your rewards & benefits',
+    panelLabel: 'Where you earn the most',
+    chips,
+    selected: null,
+    earnLine: (
+      <>
+        <b className="text-navy">{card.earn?.rate}</b> {card.earn?.detail || 'on your everyday spend'}. Manage your card in UOB&nbsp;TMRW.
+      </>
+    ),
+  }
+}
+
+function AlreadyHaveCard({ card, onOpen }) {
+  const cfg = servicingConfig(card)
+  return (
+    <section className="px-5 pt-6">
+      <div className="rounded-card border-2 border-royal bg-sky-soft p-4 shadow-[0_10px_30px_-14px_rgba(0,94,184,0.5)]">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-royal">Already have this card?</p>
+            <h2 className="mt-0.5 font-display text-[15.5px] font-bold leading-tight text-navy">{cfg.title}</h2>
+            <p className="mt-1 text-[12.5px] leading-snug text-slatey">
+              The same place on every card page — jump straight to your task.
+            </p>
+          </div>
+          <button onClick={onOpen} className="shrink-0 rounded-btn bg-royal px-5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-royal-700">
+            Open
+          </button>
+        </div>
+        {cfg.chips.length > 0 && (
+          <div className="mt-3.5 rounded-tile border border-royal/30 bg-white p-3">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-slatey">{cfg.panelLabel}</p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {cfg.chips.map((c) => (
+                <span
+                  key={c}
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                    c === cfg.selected ? 'bg-royal text-white' : 'border border-line bg-mist text-slatey'
+                  }`}
+                >
+                  {c === cfg.selected && '✓ '}
+                  {c}
+                </span>
+              ))}
+            </div>
+            <p className="mt-2.5 text-[12px] leading-snug text-ink">{cfg.earnLine}</p>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
 function StickyApply({ card, show }) {
   return (
     <AnimatePresence>
