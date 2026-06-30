@@ -7,6 +7,7 @@ import Apply from './pages/Apply'
 import Promotions from './pages/Promotions'
 import Compare from './pages/Compare'
 import Guide from './pages/Guide'
+import Mockups from './pages/Mockups'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -32,6 +33,10 @@ export default function App() {
           <Route path="/compare" element={<Compare />} />
           <Route path="/guide" element={<Guide />} />
         </Route>
+        {/* Deck mockup screens — rendered without app chrome for clean
+            screenshots into the Stage 2 slides (3, 4, 8, 9). */}
+        <Route path="/mockup" element={<Mockups />} />
+        <Route path="/mockup/:kind" element={<Mockups />} />
       </Routes>
     </>
   )
