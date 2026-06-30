@@ -433,7 +433,7 @@ export default function CardDetail() {
           response). One designated, consistent spot on EVERY card page, right
           after the at-a-glance summary: lower priority than Apply but always
           visible, deep-linking the cardholder straight to their task. */}
-      <AlreadyHaveCard card={card} onOpen={goToRewards} />
+      <AlreadyHaveCard card={card} goToRewards={goToRewards} scrollToId={scrollToId} />
 
       {/* Value prop + fit — one consolidated section: the lifestyle hook flows
           straight into an honest "is this card right for you?" verdict and the
@@ -1143,72 +1143,79 @@ function Faq({ q, a, defaultOpen }) {
 
 // Sticky footer (2.5): card face (left) · two key benefits (centre) · Apply
 // (right). No full card name — the face already identifies the card.
-// "Already have this card?" — the existing-customer servicing component.
-// Card-aware: Lady's-style cards (where the holder picks a bonus category each
-// quarter) get the category toggle; cashback/miles cards surface their bonus
-// categories read-only with a deep-link to rewards. Same component, same spot,
-// every card page.
-function servicingConfig(card) {
+// "Already have this card?" — the existing-customer servicing lane (Stage 2 Q2).
+// Not a single task: existing cardholders arrive with a range of top questions
+// (VOC: rewards mechanics, caps & exclusions, balances, the One Account unlock).
+// So the component is a floating card of quick actions, card-aware, each one
+// deep-linking to the answer on the page or the task in UOB TMRW.
+function servicingOptions(card, { goToRewards, scrollToId }) {
+  const toBenefits = () => scrollToId('benefits')
+  const toFees = () => scrollToId('fees')
   if (card.slug === 'ladys-card') {
-    return {
-      title: 'Change your rewards category',
-      panelLabel: 'Your 10X category this quarter',
-      chips: ['Beauty & Wellness', 'Dining', 'Fashion', 'Family', 'Transport', 'Travel'],
-      selected: 'Dining',
-      earnLine: (
-        <>
-          You're earning <b className="text-navy">10X UNI$ (4 miles / S$1)</b> on Dining. Switch any quarter in UOB&nbsp;TMRW.
-        </>
-      ),
-    }
+    return [
+      { icon: 'Spark', label: 'Change your rewards category', value: 'Now: Dining', onClick: goToRewards },
+      { icon: 'Info', label: 'How your UNI$ are earned — caps & limits', onClick: toBenefits },
+      { icon: 'Coin', label: 'Check your UNI$ balance', hint: 'TMRW', onClick: goToRewards },
+      { icon: 'Phone', label: 'Manage card, PIN & limits', hint: 'TMRW', onClick: goToRewards },
+    ]
   }
-  // Default — surface this card's bonus categories and deep-link to rewards.
-  const chips = (card.heroLabels || []).slice(0, 6)
-  return {
-    title: 'View your rewards & benefits',
-    panelLabel: 'Where you earn the most',
-    chips,
-    selected: null,
-    earnLine: (
-      <>
-        <b className="text-navy">{card.earn?.rate}</b> {card.earn?.detail || 'on your everyday spend'}. Manage your card in UOB&nbsp;TMRW.
-      </>
-    ),
+  if (card.slug === 'one-card') {
+    return [
+      { icon: 'Info', label: 'How your cashback is calculated — caps & exclusions', onClick: toBenefits },
+      { icon: 'Wallet', label: 'Add a One Account to unlock the full rate', value: 'Up to 3.4% p.a.', onClick: toBenefits },
+      { icon: 'Coin', label: 'Check your cashback this quarter', hint: 'TMRW', onClick: goToRewards },
+      { icon: 'Phone', label: 'Manage card, PIN & limits', hint: 'TMRW', onClick: goToRewards },
+    ]
   }
+  // Generic existing-cardholder tasks for every other card.
+  return [
+    { icon: 'Info', label: 'How your rewards are calculated — caps & limits', onClick: toBenefits },
+    { icon: 'Coin', label: 'Check your rewards balance', hint: 'TMRW', onClick: goToRewards },
+    { icon: 'Wallet', label: 'View fees & charges', onClick: toFees },
+    { icon: 'Phone', label: 'Manage card, PIN & limits', hint: 'TMRW', onClick: goToRewards },
+  ]
 }
 
-function AlreadyHaveCard({ card, onOpen }) {
-  const cfg = servicingConfig(card)
+function AlreadyHaveCard({ card, goToRewards, scrollToId }) {
+  const items = servicingOptions(card, { goToRewards, scrollToId })
   return (
     <section className="px-5 pt-10">
-      <h2 className="font-display text-[20px] font-bold leading-tight text-navy">Already have this card?</h2>
-      <p className="mt-1.5 text-[13.5px] leading-snug text-slatey">
-        The same place on every card page — jump straight to your task.
-      </p>
-      <div className="mt-4 overflow-hidden rounded-card bg-white ring-1 ring-line/70">
-        <div className="flex items-center justify-between gap-3 px-5 py-4">
+      {/* One floating card. The "already have this card" framing lives inside it
+          (no big page-level title), followed by the existing-customer options. */}
+      <div className="surface p-5">
+        <div className="flex items-center gap-2.5">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sky-soft text-royal">
+            <Icon.User size={18} />
+          </span>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-slatey">For existing cardholders</p>
-            <p className="mt-0.5 text-[15px] font-bold leading-snug text-navy">{cfg.title}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-royal">For existing cardholders</p>
+            <h3 className="font-display text-[17px] font-bold leading-tight text-navy">Already have this card?</h3>
           </div>
-          <button onClick={onOpen} className="btn-secondary btn-md shrink-0">
-            Open <Icon.Chevron size={14} className="-rotate-90" />
-          </button>
         </div>
-        {cfg.chips.length > 0 && (
-          <div className="border-t border-line/70 px-5 py-4">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-slatey">{cfg.panelLabel}</p>
-            <div className="mt-2.5 flex flex-wrap gap-2">
-              {cfg.chips.map((c) => (
-                <span key={c} className={c === cfg.selected ? 'chip chip-active' : 'chip'}>
-                  {c === cfg.selected && <Icon.Check size={13} />}
-                  {c}
+        <div className="mt-4 overflow-hidden rounded-tile border border-line/70">
+          {items.map((it, i) => {
+            const ItIcon = (it.icon && Icon[it.icon]) || Icon.Spark
+            return (
+              <button
+                key={it.label}
+                onClick={it.onClick}
+                className={`flex w-full items-center gap-3 px-3.5 py-3 text-left transition-colors hover:bg-mist ${
+                  i > 0 ? 'border-t border-line/70' : ''
+                }`}
+              >
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-tile bg-mist text-royal">
+                  <ItIcon size={16} />
                 </span>
-              ))}
-            </div>
-            <p className="mt-3 text-[13px] leading-relaxed text-ink">{cfg.earnLine}</p>
-          </div>
-        )}
+                <span className="min-w-0 flex-1 text-[13.5px] font-semibold leading-snug text-navy">{it.label}</span>
+                {it.value && (
+                  <span className="shrink-0 rounded-full bg-sky-soft px-2 py-0.5 text-[10px] font-bold text-royal">{it.value}</span>
+                )}
+                {it.hint && <span className="shrink-0 text-[9.5px] font-bold uppercase tracking-wide text-slatey">{it.hint}</span>}
+                <Icon.Chevron size={16} className="-rotate-90 shrink-0 text-royal" />
+              </button>
+            )
+          })}
+        </div>
       </div>
     </section>
   )
