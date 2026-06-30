@@ -37,7 +37,6 @@ export default function Reel() {
   const [cursor, setCursor] = useState({ x: DEVICE_W / 2, y: DEVICE_H / 2 })
   const [clicking, setClicking] = useState(false)
   const [comments, setComments] = useState([])
-  const [pins, setPins] = useState([])
   const [loop, setLoop] = useState(0)
   const [scale, setScale] = useState(1)
 
@@ -113,7 +112,6 @@ export default function Reel() {
 
     const reset = () => {
       setComments([])
-      setPins([])
       pinSeq = 0
     }
 
@@ -130,8 +128,6 @@ export default function Reel() {
     const comment2 = async (text, hold = 1900) => {
       pinSeq += 1
       const n = pinSeq
-      const c = cursorRef.current
-      setPins((p) => [...p, { n, x: c.x, y: c.y }])
       setComments((cs) => [...cs, { id: `${n}-${text.length}`, n, text }])
       await wait(hold)
     }
@@ -272,20 +268,6 @@ export default function Reel() {
                 style={{ width: DEVICE_W, height: DEVICE_H }}
               />
 
-              {/* numbered comment pins */}
-              {pins.map((p) => (
-                <motion.div
-                  key={p.n}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-                  className="pointer-events-none absolute z-20 grid h-7 w-7 -translate-x-1/2 -translate-y-full place-items-center rounded-full rounded-bl-none bg-royal text-[12px] font-bold text-white shadow-lg ring-2 ring-white"
-                  style={{ left: p.x, top: p.y }}
-                >
-                  {p.n}
-                </motion.div>
-              ))}
-
               {/* ghost cursor */}
               <motion.div
                 className="pointer-events-none absolute z-30"
@@ -315,11 +297,11 @@ export default function Reel() {
         <div className="w-[380px] shrink-0">
           <div className="mb-4 flex items-center gap-3">
             <div className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-[#0084ff] to-[#00237b] text-[15px] font-extrabold text-white ring-2 ring-white/15">
-              MT
+              MC
             </div>
             <div>
-              <p className="text-[15px] font-bold text-white">Marcus Tan</p>
-              <p className="text-[12px] text-white/55">Cards Product, UOB · reviewing</p>
+              <p className="text-[15px] font-bold text-white">Marcus Chew</p>
+              <p className="text-[12px] text-white/55">Managing Director, Group Retail Marketing · reviewing</p>
             </div>
           </div>
 
@@ -334,8 +316,8 @@ export default function Reel() {
                   transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                   className="flex gap-3 rounded-2xl rounded-tl-sm bg-white/[0.07] p-3.5 ring-1 ring-white/10 backdrop-blur"
                 >
-                  <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-royal text-[11px] font-bold text-white">
-                    {c.n}
+                  <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#0084ff] to-[#00237b] text-[9px] font-bold text-white">
+                    MC
                   </span>
                   <p className="text-[13.5px] leading-relaxed text-white/90">
                     <Typewriter text={c.text} />
