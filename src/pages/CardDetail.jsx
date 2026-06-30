@@ -1180,35 +1180,42 @@ function AlreadyHaveCard({ card, goToRewards, scrollToId }) {
   const items = servicingOptions(card, { goToRewards, scrollToId })
   return (
     <section className="px-5 pt-10">
-      {/* One floating card. The "already have this card" framing lives inside it
-          (no big page-level title), followed by the existing-customer options. */}
-      <div className="surface p-5">
-        <div className="flex items-center gap-2.5">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sky-soft text-royal">
-            <Icon.User size={18} />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-royal">For existing cardholders</p>
-            <h3 className="font-display text-[17px] font-bold leading-tight text-navy">Already have this card?</h3>
+      {/* A distinct servicing module — its own dark-blue banner + light-blue body
+          set it apart from the white product page, the way banking apps surface
+          an "account quick actions" panel. Existing-customer territory. */}
+      <div className="overflow-hidden rounded-card shadow-tile ring-1 ring-royal/15">
+        {/* Dark-blue banner header */}
+        <div className="relative overflow-hidden bg-[linear-gradient(120deg,#00237b_0%,#004585_58%,#005eb8_100%)] px-5 py-4 text-white">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-80"
+            style={{ background: 'radial-gradient(120% 130% at 92% -25%, rgba(0,132,255,0.45), transparent 60%)' }}
+          />
+          <div className="relative flex items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15 ring-1 ring-white/25 backdrop-blur">
+              <Icon.User size={20} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-sky">For existing cardholders</p>
+              <h3 className="font-display text-[18px] font-extrabold leading-tight">Already have this card?</h3>
+            </div>
           </div>
         </div>
-        <div className="mt-4 overflow-hidden rounded-tile border border-line/70">
-          {items.map((it, i) => {
+        {/* Light-blue body — quick actions as white tiles */}
+        <div className="space-y-2 bg-sky-soft p-3">
+          {items.map((it) => {
             const ItIcon = (it.icon && Icon[it.icon]) || Icon.Spark
             return (
               <button
                 key={it.label}
                 onClick={it.onClick}
-                className={`flex w-full items-center gap-3 px-3.5 py-3 text-left transition-colors hover:bg-mist ${
-                  i > 0 ? 'border-t border-line/70' : ''
-                }`}
+                className="flex w-full items-center gap-3 rounded-tile bg-white px-3.5 py-3 text-left shadow-[0_1px_2px_rgba(0,35,123,0.06)] ring-1 ring-line/60 transition-all hover:-translate-y-px hover:shadow-tile hover:ring-royal/40"
               >
-                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-tile bg-mist text-royal">
-                  <ItIcon size={16} />
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sky-soft text-royal">
+                  <ItIcon size={17} />
                 </span>
                 <span className="min-w-0 flex-1 text-[13.5px] font-semibold leading-snug text-navy">{it.label}</span>
                 {it.value && (
-                  <span className="shrink-0 rounded-full bg-sky-soft px-2 py-0.5 text-[10px] font-bold text-royal">{it.value}</span>
+                  <span className="shrink-0 rounded-full bg-navy px-2 py-0.5 text-[10px] font-bold text-white">{it.value}</span>
                 )}
                 {it.hint && <span className="shrink-0 text-[9.5px] font-bold uppercase tracking-wide text-slatey">{it.hint}</span>}
                 <Icon.Chevron size={16} className="-rotate-90 shrink-0 text-royal" />
