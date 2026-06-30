@@ -1190,13 +1190,13 @@ function AlreadyHaveCard({ card, goToRewards, scrollToId }) {
             className="pointer-events-none absolute inset-0 opacity-80"
             style={{ background: 'radial-gradient(120% 130% at 92% -25%, rgba(0,132,255,0.45), transparent 60%)' }}
           />
-          <div className="relative flex items-center gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15 ring-1 ring-white/25 backdrop-blur">
-              <Icon.User size={20} />
-            </span>
+          <div className="relative flex items-center gap-3.5">
+            <div className="w-[46px] shrink-0">
+              <CardArt card={card} floating />
+            </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-sky">For existing cardholders</p>
               <h3 className="font-display text-[18px] font-extrabold leading-tight">Already have this card?</h3>
+              <p className="mt-1 text-[12.5px] font-medium leading-snug text-sky">Jump straight to a common task.</p>
             </div>
           </div>
         </div>
