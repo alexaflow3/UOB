@@ -326,11 +326,18 @@ function Bundle() {
           </div>
         </div>
 
-        <p className="mt-3.5 text-[12.5px] leading-snug text-slatey">
-          Earn the bonus interest when you spend min. S$500/month and credit your salary or make 3 GIRO payments.
+        {/* Loss-framed nudge — what they leave behind by not pairing (Q3.3) */}
+        <div className="mt-4 flex items-start gap-2 rounded-tile bg-uobred/[0.06] px-3 py-2.5 ring-1 ring-uobred/15">
+          <Icon.Info size={15} className="mt-0.5 shrink-0 text-uobred" />
+          <p className="text-[12.5px] leading-snug text-navy">
+            Without it, that <b className="font-bold">3.4% p.a. bonus interest stays on the table</b> — your card earns only half of what the pair could.
+          </p>
+        </div>
+        <p className="mt-3 text-[12px] leading-snug text-slatey">
+          Bonus interest applies when you spend min. S$500/month and credit your salary or make 3 GIRO payments.
         </p>
         <p className="mt-3 flex items-center gap-1.5 text-[12px] font-semibold text-royal">
-          <Icon.Check size={15} /> Pre-filled from your application — no re-entering details.
+          <Icon.Check size={15} /> Pre-filled from your application — no need to re-enter your details.
         </p>
       </div>
 
