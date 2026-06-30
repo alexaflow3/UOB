@@ -8,6 +8,7 @@ import Promotions from './pages/Promotions'
 import Compare from './pages/Compare'
 import Guide from './pages/Guide'
 import Mockups from './pages/Mockups'
+import Reel from './pages/Reel'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -37,6 +38,9 @@ export default function App() {
             screenshots into the Stage 2 slides (3, 4, 8, 9). */}
         <Route path="/mockup" element={<Mockups />} />
         <Route path="/mockup/:kind" element={<Mockups />} />
+        {/* Auto-playing "live review" reel for screen-recording into a GIF. */}
+        <Route path="/demo" element={<Reel />} />
+        <Route path="/reel" element={<Reel />} />
       </Routes>
     </>
   )
