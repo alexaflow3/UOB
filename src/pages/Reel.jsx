@@ -255,7 +255,7 @@ export default function Reel() {
                 ref={iframeRef}
                 title="UOB prototype"
                 src={`${base}#/`}
-                className="block border-0"
+                className="block rounded-[32px] border-0"
                 style={{ width: DEVICE_W, height: DEVICE_H }}
               />
 
