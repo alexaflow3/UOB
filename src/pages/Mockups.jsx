@@ -1,7 +1,48 @@
 import { useParams, Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { cardBySlug } from '../data/cards'
 import CardArt from '../components/CardArt'
 import { Icon } from '../lib/icons'
+
+// Celebratory confetti burst from the success check (slide 9). Deterministic
+// pieces (no Math.random so it renders identically every time), looping so the
+// moment stays capturable for the deck and lively in the reel.
+const CONFETTI = Array.from({ length: 22 }, (_, i) => {
+  const palette = ['#fb002c', '#005eb8', '#0084ff', '#B68A3E', '#ffffff', '#33b1ff']
+  const dir = i % 2 ? 1 : -1
+  const spread = 34 + (i % 6) * 22
+  return {
+    x: dir * spread * (0.6 + (i % 4) * 0.2),
+    up: 46 + ((i * 31) % 78),
+    down: 150 + ((i * 53) % 90),
+    rot: ((i * 71) % 360) + 240,
+    color: palette[i % palette.length],
+    round: i % 3 === 0,
+    delay: (i % 7) * 0.05,
+  }
+})
+
+function Confetti() {
+  return (
+    <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-0 w-0">
+      {CONFETTI.map((p, i) => (
+        <motion.span
+          key={i}
+          className="absolute block"
+          style={{
+            width: p.round ? 8 : 6,
+            height: p.round ? 8 : 11,
+            background: p.color,
+            borderRadius: p.round ? 9999 : 1,
+          }}
+          initial={{ x: 0, y: 0, opacity: 0, scale: 0, rotate: 0 }}
+          animate={{ x: [0, p.x * 0.7, p.x], y: [0, -p.up, p.down], opacity: [0, 1, 1, 0], scale: [0.4, 1, 1], rotate: p.rot }}
+          transition={{ duration: 1.7, delay: p.delay, repeat: Infinity, repeatDelay: 1.4, ease: 'easeOut' }}
+        />
+      ))}
+    </div>
+  )
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Deck mockup screens (Stage 2 response, slides 3 / 4 / 8 / 9).
@@ -235,17 +276,27 @@ function Bundle() {
   const card = cardBySlug('one-card')
   return (
     <Screen>
-      {/* Confirmation — the application just completed */}
-      <header className="relative overflow-hidden bg-navy px-5 pb-9 pt-10 text-center text-white">
+      {/* Confirmation — the application just completed. Same hero gradient as the
+          card pages, with a celebratory confetti burst from the success check. */}
+      <header className="relative overflow-hidden bg-[linear-gradient(180deg,#0a2240_0%,#0a2240_60%,#0c2647_100%)] px-5 pb-10 pt-12 text-center text-white">
         <div
-          className="pointer-events-none absolute inset-0 opacity-90"
-          style={{ background: 'radial-gradient(120% 90% at 50% -20%, #0e3a78 0%, transparent 60%)' }}
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(90% 70% at 50% 2%, rgba(0,132,255,0.30), transparent 62%)' }}
         />
-        <div className="relative mx-auto grid h-16 w-16 place-items-center rounded-full bg-white/12 ring-1 ring-white/25">
-          <Icon.Check size={34} className="text-sky" />
+        <div className="relative mx-auto h-20 w-20">
+          <Confetti />
+          <div className="absolute inset-0 rounded-full bg-sky/30 blur-2xl" />
+          <motion.div
+            initial={{ scale: 0.4, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 15 }}
+            className="relative grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-[#3aa8ff] to-[#005eb8] shadow-[0_14px_34px_-6px_rgba(0,132,255,0.7)] ring-4 ring-white/15"
+          >
+            <Icon.Check size={38} className="text-white" />
+          </motion.div>
         </div>
-        <p className="relative mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-sky">Application submitted</p>
-        <h1 className="relative mt-1.5 font-display text-[23px] font-extrabold leading-tight">You’re all set, Tanya.</h1>
+        <p className="relative mt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-sky">Application submitted</p>
+        <h1 className="relative mt-1.5 font-display text-[24px] font-extrabold leading-tight">You’re all set, Tanya.</h1>
         <p className="relative mx-auto mt-2 max-w-[290px] text-[13px] leading-snug text-white/70">
           Your UOB One Card application is in — we’ll confirm within 3 working days.
         </p>
@@ -254,15 +305,12 @@ function Bundle() {
         </p>
       </header>
 
-      <div className="px-5 py-6">
+      <div className="px-5 pb-28 pt-7">
         {/* The well-timed add-on */}
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-royal">One last thing</p>
-        <h2 className="mt-1 font-display text-[20px] font-extrabold leading-tight text-navy">
+        <p className="eyebrow">One last thing</p>
+        <h2 className="mt-1.5 font-display text-[20px] font-extrabold leading-tight text-navy">
           Add a One Account to unlock the full rate
         </h2>
-        <p className="mt-2 text-[13.5px] leading-snug text-slatey">
-          You’ve got the card. Pair it with a UOB One Account and your everyday spend works twice.
-        </p>
 
         {/* Now vs. both — the gap is the hook */}
         <div className="mt-4 grid grid-cols-2 gap-2.5">
@@ -278,20 +326,20 @@ function Bundle() {
           </div>
         </div>
 
-        <p className="mt-3 text-[11.5px] leading-snug text-slatey">
+        <p className="mt-3.5 text-[12.5px] leading-snug text-slatey">
           Earn the bonus interest when you spend min. S$500/month and credit your salary or make 3 GIRO payments.
         </p>
-
-        {/* CTAs */}
-        <div className="mt-5 space-y-2.5">
-          <button className="btn-primary btn-lg flex w-full bg-uobred hover:bg-uobred-600">
-            Add a One Account — 2 mins
-          </button>
-          <button className="btn-ghost btn-md flex w-full text-slatey">No thanks, I’m done</button>
-        </div>
-        <p className="mt-3 text-center text-[11px] leading-snug text-slatey">
-          Pre-filled from your application — no need to re-enter your details.
+        <p className="mt-3 flex items-center gap-1.5 text-[12px] font-semibold text-royal">
+          <Icon.Check size={15} /> Pre-filled from your application — no re-entering details.
         </p>
+      </div>
+
+      {/* Sticky CTA shelf — same pattern as the apply flow, two actions side by side */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur">
+        <div className="mx-auto flex max-w-[420px] items-center gap-3">
+          <button className="btn-secondary btn-lg flex-1">Maybe later</button>
+          <button className="btn-primary btn-lg flex-1 bg-uobred hover:bg-uobred-600">Add account</button>
+        </div>
       </div>
     </Screen>
   )
