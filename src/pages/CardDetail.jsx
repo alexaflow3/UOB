@@ -1183,24 +1183,24 @@ function AlreadyHaveCard({ card, goToRewards, scrollToId }) {
   // reveal the quick actions — same accordion behaviour as the glance table.
   const [open, setOpen] = useState(false)
   return (
-    <section className="px-5 pt-10">
+    <section className="px-5 pt-5">
       <div className="overflow-hidden rounded-card shadow-tile ring-1 ring-royal/15">
         {/* Dark-blue banner — also the accordion toggle */}
         <button
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
-          className="relative flex w-full items-center gap-3.5 overflow-hidden bg-[linear-gradient(120deg,#00237b_0%,#004585_58%,#005eb8_100%)] px-5 py-4 text-left text-white"
+          className="relative flex w-full items-center gap-3 overflow-hidden bg-[linear-gradient(120deg,#00237b_0%,#004585_58%,#005eb8_100%)] px-4 py-3.5 text-left text-white"
         >
           <div
             className="pointer-events-none absolute inset-0 opacity-80"
             style={{ background: 'radial-gradient(120% 130% at 92% -25%, rgba(0,132,255,0.45), transparent 60%)' }}
           />
-          <div className="relative w-[46px] shrink-0">
+          <div className="relative w-[40px] shrink-0">
             <CardArt card={card} floating />
           </div>
           <div className="relative min-w-0 flex-1">
-            <h3 className="font-display text-[18px] font-extrabold leading-tight">Already have this card?</h3>
-            <p className="mt-1 text-[12.5px] font-medium leading-snug text-sky">Manage rewards, balance &amp; more.</p>
+            <h3 className="font-display text-[15px] font-extrabold leading-tight">Already have this card?</h3>
+            <p className="mt-0.5 text-[12.5px] font-semibold leading-snug text-sky-soft">Manage rewards, balance &amp; more.</p>
           </div>
           <Icon.Chevron size={20} className={`relative shrink-0 text-white/80 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
