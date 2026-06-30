@@ -227,42 +227,71 @@ function Prototype() {
   )
 }
 
-// ── Slide 9 — CASA cross-sell: add a One Account ────────────────────────────
+// ── Slide 9 — CASA cross-sell as the post-application confirmation page ──────
+// The transaction just happened: the customer finished applying for the One
+// Card. Now — and only now — the One Account is offered as the well-timed add-on
+// to a decision already made (response doc Q3.3), not a mid-page interruption.
 function Bundle() {
   const card = cardBySlug('one-card')
   return (
     <Screen>
-      <ProductHeader card={card} kicker="UOB One — get the full rate" title="You have the card. Unlock the rest." />
-      <div className="space-y-3 px-5 py-5">
-        <Row tone="muted" eyebrow="You have" title="UOB One Credit Card" sub="Up to 5% cashback on everyday spend" cta="Active" ctaTone="navy" />
-
-        <Row
-          tone="primary"
-          eyebrow="Add to unlock the full rate"
-          title="Add a UOB One Account"
-          sub="Pair them to earn up to 3.4% p.a. bonus interest — your everyday spend works twice."
-          cta="Add"
+      {/* Confirmation — the application just completed */}
+      <header className="relative overflow-hidden bg-navy px-5 pb-9 pt-10 text-center text-white">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-90"
+          style={{ background: 'radial-gradient(120% 90% at 50% -20%, #0e3a78 0%, transparent 60%)' }}
         />
-
-        {/* Now vs. with both — the gap is the hook */}
-        <div className="rounded-card border border-line bg-white p-4">
-          <h2 className="font-display text-[15px] font-bold text-navy">What the pair unlocks</h2>
-          <div className="mt-3 grid grid-cols-2 gap-2.5 text-[12.5px]">
-            <div className="rounded-tile bg-mist p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-slatey">Card alone</p>
-              <p className="mt-1.5 font-bold text-navy">Up to 5%</p>
-              <p className="leading-snug text-slatey">cashback on everyday spend</p>
-            </div>
-            <div className="rounded-tile border border-royal/30 bg-sky-soft p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-royal">Card + account</p>
-              <p className="mt-1.5 font-bold text-navy">5% + 3.4% p.a.</p>
-              <p className="leading-snug text-slatey">cashback plus bonus interest</p>
-            </div>
-          </div>
-          <p className="mt-3 text-[11.5px] leading-snug text-slatey">
-            Spend min. S$500/month and credit your salary or make 3 GIRO payments to earn the full rate.
-          </p>
+        <div className="relative mx-auto grid h-16 w-16 place-items-center rounded-full bg-white/12 ring-1 ring-white/25">
+          <Icon.Check size={34} className="text-sky" />
         </div>
+        <p className="relative mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-sky">Application submitted</p>
+        <h1 className="relative mt-1.5 font-display text-[23px] font-extrabold leading-tight">You’re all set, Tanya.</h1>
+        <p className="relative mx-auto mt-2 max-w-[290px] text-[13px] leading-snug text-white/70">
+          Your UOB One Card application is in — we’ll confirm within 3 working days.
+        </p>
+        <p className="relative mt-3.5 inline-block rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-wide text-white/80">
+          Ref · UOB-ONE-4827193
+        </p>
+      </header>
+
+      <div className="px-5 py-6">
+        {/* The well-timed add-on */}
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-royal">One last thing</p>
+        <h2 className="mt-1 font-display text-[20px] font-extrabold leading-tight text-navy">
+          Add a One Account to unlock the full rate
+        </h2>
+        <p className="mt-2 text-[13.5px] leading-snug text-slatey">
+          You’ve got the card. Pair it with a UOB One Account and your everyday spend works twice.
+        </p>
+
+        {/* Now vs. both — the gap is the hook */}
+        <div className="mt-4 grid grid-cols-2 gap-2.5">
+          <div className="rounded-tile bg-mist p-3.5">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slatey">Card alone</p>
+            <p className="mt-1.5 text-[16px] font-extrabold text-navy">Up to 5%</p>
+            <p className="text-[12px] leading-snug text-slatey">cashback on everyday spend</p>
+          </div>
+          <div className="rounded-tile border border-royal/30 bg-sky-soft p-3.5 ring-1 ring-royal/10">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-royal">Card + account</p>
+            <p className="mt-1.5 text-[16px] font-extrabold text-navy">5% + 3.4% p.a.</p>
+            <p className="text-[12px] leading-snug text-slatey">cashback plus bonus interest</p>
+          </div>
+        </div>
+
+        <p className="mt-3 text-[11.5px] leading-snug text-slatey">
+          Earn the bonus interest when you spend min. S$500/month and credit your salary or make 3 GIRO payments.
+        </p>
+
+        {/* CTAs */}
+        <div className="mt-5 space-y-2.5">
+          <button className="btn-primary btn-lg flex w-full bg-uobred hover:bg-uobred-600">
+            Add a One Account — 2 mins
+          </button>
+          <button className="btn-ghost btn-md flex w-full text-slatey">No thanks, I’m done</button>
+        </div>
+        <p className="mt-3 text-center text-[11px] leading-snug text-slatey">
+          Pre-filled from your application — no need to re-enter your details.
+        </p>
       </div>
     </Screen>
   )
