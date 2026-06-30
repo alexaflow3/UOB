@@ -14,17 +14,23 @@ function Wordmark() {
 }
 
 function Header() {
+  // Fixed (not sticky): the phone-frame wrapper uses overflow-hidden, which
+  // breaks position: sticky for descendants. Mirror the BottomNav approach —
+  // fixed on mobile (window scroll), constrained to the frame on desktop where
+  // the inner <main> is the scroll container.
   return (
-    <header className="sticky top-0 z-30 border-b border-line/80 bg-white/85 backdrop-blur-md">
-      <div className="flex h-14 items-center justify-between px-5">
-        <Wordmark />
-        <div className="flex items-center gap-1">
-          <button className="grid h-9 w-9 place-items-center rounded-full text-navy hover:bg-mist" aria-label="Search">
-            <Icon.Search size={20} />
-          </button>
-          <Link to="/" className="grid h-9 w-9 place-items-center rounded-full text-navy hover:bg-mist" aria-label="Account">
-            <Icon.User size={20} />
-          </Link>
+    <header className="fixed inset-x-0 top-0 z-30 lg:absolute">
+      <div className="phone-shell">
+        <div className="flex h-14 items-center justify-between border-b border-line/80 bg-white/90 px-5 backdrop-blur-md">
+          <Wordmark />
+          <div className="flex items-center gap-1">
+            <button className="grid h-9 w-9 place-items-center rounded-full text-navy hover:bg-mist" aria-label="Search">
+              <Icon.Search size={20} />
+            </button>
+            <Link to="/" className="grid h-9 w-9 place-items-center rounded-full text-navy hover:bg-mist" aria-label="Account">
+              <Icon.User size={20} />
+            </Link>
+          </div>
         </div>
       </div>
     </header>
@@ -109,7 +115,8 @@ export default function Layout() {
       <div className="relative z-10 mx-auto w-full max-w-phone bg-mist lg:h-[calc(100vh-2rem)] lg:rounded-[55px] lg:p-3 lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.7)] lg:ring-1 lg:ring-white/10">
         <div className="relative min-h-screen overflow-hidden bg-mist lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:rounded-[46px]">
           {!isApply && <Header />}
-          <main ref={screenRef} className="pb-28 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+          {/* pt-14 clears the now-fixed/absolute header (h-14) whenever it's shown. */}
+          <main ref={screenRef} className={`pb-28 lg:min-h-0 lg:flex-1 lg:overflow-y-auto ${!isApply ? 'pt-14' : ''}`}>
             <Outlet />
           </main>
           {!hideNav && <BottomNav />}
