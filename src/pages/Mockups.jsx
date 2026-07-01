@@ -61,10 +61,31 @@ function Confetti() {
 // mobile preset (375×812).
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Self-contained device screen.
+// Device frame + dark backdrop — same presentation as the app's phone frame on
+// desktop, so the deck mockups read consistently with the rest of the prototype.
+function DeviceFrame({ children }) {
+  return (
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-navy p-4">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-50"
+        style={{
+          background:
+            'radial-gradient(900px 500px at 80% -5%, #0e3a78 0%, transparent 60%), radial-gradient(700px 500px at 0% 100%, #06294f 0%, transparent 55%)',
+        }}
+      />
+      <div className="relative z-10 h-[calc(100vh-2rem)] max-h-[880px] w-full max-w-[400px] rounded-[48px] bg-black p-3 shadow-[0_50px_120px_-40px_rgba(0,0,0,0.7)] ring-1 ring-white/10">
+        <div className="relative h-full overflow-hidden rounded-[38px] bg-mist">
+          <div className="h-full overflow-y-auto">{children}</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Phone screen content — fills the device frame.
 function Screen({ children }) {
   return (
-    <div className="mx-auto min-h-screen w-full max-w-[420px] bg-mist font-sans text-ink">
+    <div className="relative min-h-full w-full bg-mist font-sans text-ink">
       {children}
     </div>
   )
@@ -335,7 +356,7 @@ function Bundle() {
       </div>
 
       {/* Sticky CTA shelf — same pattern as the apply flow, two actions side by side */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur">
+      <div className="sticky bottom-0 z-30 border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur">
         <div className="mx-auto flex max-w-[420px] items-center gap-3">
           <button className="btn-secondary btn-lg flex-1">Maybe later</button>
           <button className="btn-primary btn-lg flex-1 bg-uobred hover:bg-uobred-600">Add account</button>
@@ -357,7 +378,11 @@ export default function Mockups() {
   const entry = SCREENS[kind]
   if (entry) {
     const El = entry.el
-    return <El />
+    return (
+      <DeviceFrame>
+        <El />
+      </DeviceFrame>
+    )
   }
   // Index — quick links to each screen.
   return (
