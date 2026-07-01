@@ -22,7 +22,12 @@ export default function Apply() {
   const card = cardBySlug(slug)
   const [step, setStep] = useState(0)
   const [fatca, setFatca] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   if (!card) return <Navigate to="/" replace />
+
+  // Transaction complete — the final step is the confirmation + One Account
+  // cross-sell (the well-timed add-on to a decision already made).
+  if (submitted) return <ApplyComplete card={card} />
 
   const minsLeft = TIME_PER_STEP.slice(step).reduce((a, b) => a + b, 0)
   // Header Back: step backward through the flow, then exit to the page the user
@@ -84,7 +89,7 @@ export default function Apply() {
             {step === 0 && <StepEligibility card={card} fatca={fatca} setFatca={setFatca} />}
             {step === 1 && <StepMethod onBack={() => setStep(0)} onNext={() => setStep(2)} />}
             {step === 2 && <StepDetails onBack={() => setStep(1)} onNext={() => setStep(3)} />}
-            {step === 3 && <StepReview card={card} onBack={() => setStep(2)} />}
+            {step === 3 && <StepReview card={card} onBack={() => setStep(2)} onSubmit={() => setSubmitted(true)} />}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -603,9 +608,7 @@ function StepDetails({ onBack, onNext }) {
 }
 
 /* ---------- Step 4: Review & submit ---------- */
-function StepReview({ card, onBack }) {
-  const [done, setDone] = useState(false)
-  if (done) return <Success card={card} />
+function StepReview({ card, onBack, onSubmit }) {
   return (
     <div className="space-y-5">
       <h1 className="font-display text-[20px] font-extrabold text-navy">Review & submit</h1>
@@ -621,56 +624,116 @@ function StepReview({ card, onBack }) {
       </label>
       <div className="flex gap-3">
         <button onClick={onBack} className="btn-secondary btn-lg flex-1">Back</button>
-        <button onClick={() => setDone(true)} className="btn-primary btn-lg flex-[2]">Submit application</button>
+        <button onClick={onSubmit} className="btn-primary btn-lg flex-[2]">Submit application</button>
       </div>
     </div>
   )
 }
 
-function Success({ card }) {
-  // Cross-sell lives here — AFTER submission — so it never interrupts the
-  // application (slide: "moved to after submission. Today it interrupts 11%").
-  const [added, setAdded] = useState(null) // null = undecided, true/false = chosen
+// Celebratory confetti burst from the success check. Deterministic pieces (no
+// Math.random so it renders identically), looping so the moment stays lively.
+const CONFETTI = Array.from({ length: 22 }, (_, i) => {
+  const palette = ['#fb002c', '#005eb8', '#0084ff', '#B68A3E', '#ffffff', '#33b1ff']
+  const dir = i % 2 ? 1 : -1
+  const spread = 34 + (i % 6) * 22
+  return {
+    x: dir * spread * (0.6 + (i % 4) * 0.2),
+    up: 46 + ((i * 31) % 78),
+    down: 150 + ((i * 53) % 90),
+    rot: ((i * 71) % 360) + 240,
+    color: palette[i % palette.length],
+    round: i % 3 === 0,
+    delay: (i % 7) * 0.05,
+  }
+})
+function Confetti() {
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="space-y-5 pt-6">
-      <div className="text-center">
-        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-royal text-white">
-          <Icon.Check size={34} />
-        </span>
-        <h1 className="mt-4 font-display text-[22px] font-extrabold text-navy">Application submitted</h1>
-        <p className="mt-1.5 text-[14px] leading-snug text-slatey">
-          Your {card.name.replace('UOB ', '')} application is in. Most applicants are approved instantly — we’ll email you at the address on file.
-        </p>
-      </div>
+    <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-0 w-0">
+      {CONFETTI.map((p, i) => (
+        <motion.span
+          key={i}
+          className="absolute block"
+          style={{ width: p.round ? 8 : 6, height: p.round ? 8 : 11, background: p.color, borderRadius: p.round ? 9999 : 1 }}
+          initial={{ x: 0, y: 0, opacity: 0, scale: 0, rotate: 0 }}
+          animate={{ x: [0, p.x * 0.7, p.x], y: [0, -p.up, p.down], opacity: [0, 1, 1, 0], scale: [0.4, 1, 1], rotate: p.rot }}
+          transition={{ duration: 1.7, delay: p.delay, repeat: Infinity, repeatDelay: 1.4, ease: 'easeOut' }}
+        />
+      ))}
+    </div>
+  )
+}
 
-      <div className="surface p-4 text-left text-[13px]">
-        <p className="font-semibold text-navy">What happens next</p>
-        <ol className="mt-2 space-y-1.5 text-slatey">
-          <li>1. Instant decision in most cases</li>
-          <li>2. Card delivered in 5–7 working days</li>
-          <li>3. Activate in the UOB TMRW app</li>
-        </ol>
-      </div>
-
-      {/* Optional add-on — skippable, post-submission */}
-      <div className={`surface p-4 text-left transition-colors ${added ? 'ring-2 ring-royal' : ''}`}>
-        <span className="chip border-gold/30 bg-gold-soft text-gold">Optional add-on</span>
-        <h2 className="mt-2 font-display text-[16px] font-bold text-navy">Protect your card balance</h2>
-        <p className="mt-1 text-[13px] leading-snug text-slatey">
-          Covers your outstanding balance if you lose your income unexpectedly. From S$0.30 per S$100 of balance — cancel anytime.
+// Final step of the apply flow: confirmation of the completed application, then
+// the One Account cross-sell as the well-timed add-on (response doc Q3.3).
+function ApplyComplete({ card }) {
+  const short = card.name.replace('UOB ', '')
+  const noun = card.tier === 'Travel' ? 'miles' : card.tier === 'Rewards' ? 'rewards' : 'cashback'
+  return (
+    <div className="min-h-screen bg-mist">
+      {/* Confirmation — same hero gradient as the card pages, celebratory check */}
+      <header className="relative overflow-hidden bg-[linear-gradient(180deg,#0a2240_0%,#0a2240_60%,#0c2647_100%)] px-5 pb-10 pt-12 text-center text-white">
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(90% 70% at 50% 2%, rgba(0,132,255,0.30), transparent 62%)' }}
+        />
+        <div className="relative mx-auto h-20 w-20">
+          <Confetti />
+          <div className="absolute inset-0 rounded-full bg-sky/30 blur-2xl" />
+          <motion.div
+            initial={{ scale: 0.4, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 15 }}
+            className="relative grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-[#3aa8ff] to-[#005eb8] shadow-[0_14px_34px_-6px_rgba(0,132,255,0.7)] ring-4 ring-white/15"
+          >
+            <Icon.Check size={38} className="text-white" />
+          </motion.div>
+        </div>
+        <p className="relative mt-5 text-[11px] font-bold uppercase tracking-[0.18em] text-sky">Application submitted</p>
+        <h1 className="relative mt-1.5 font-display text-[24px] font-extrabold leading-tight">You’re all set, Wei Ming.</h1>
+        <p className="relative mx-auto mt-2 max-w-[300px] text-[13px] leading-snug text-white/70">
+          Your {short} application is in — most applicants are approved instantly. We’ll email you at the address on file.
         </p>
-        {added ? (
-          <p className="mt-3 flex items-center gap-1.5 text-[13px] font-semibold text-royal"><Icon.CheckCircle size={16} /> Added — we’ll confirm by email.</p>
-        ) : (
-          <div className="mt-3 flex gap-3">
-            <button onClick={() => setAdded(false)} className={`btn-secondary btn-md flex-1 ${added === false ? 'opacity-60' : ''}`}>No thanks</button>
-            <button onClick={() => setAdded(true)} className="btn-primary btn-md flex-[1.4]"><Icon.Plus size={16} /> Add to my card</button>
+        <p className="relative mt-3.5 inline-block rounded-full bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-wide text-white/80">
+          Ref · UOB-2026-4827193
+        </p>
+      </header>
+
+      <div className="px-5 pb-28 pt-7">
+        <p className="eyebrow">One last thing</p>
+        <h2 className="mt-1.5 font-display text-[20px] font-extrabold leading-tight text-navy">
+          Add a One Account and earn 3.4% p.a. on top
+        </h2>
+
+        {/* Now vs. both — the gap is the hook */}
+        <div className="mt-4 grid grid-cols-2 gap-2.5">
+          <div className="rounded-tile bg-mist p-3.5">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slatey">Card alone</p>
+            <p className="mt-1.5 text-[16px] font-extrabold text-navy">{card.earn.rate}</p>
+            <p className="text-[12px] leading-snug text-slatey">{noun} on your spend</p>
           </div>
-        )}
+          <div className="rounded-tile border border-royal/30 bg-sky-soft p-3.5 ring-1 ring-royal/10">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-royal">Card + account</p>
+            <p className="mt-1.5 text-[16px] font-extrabold text-navy">+ 3.4% p.a.</p>
+            <p className="text-[12px] leading-snug text-slatey">bonus interest on your savings</p>
+          </div>
+        </div>
+
+        <p className="mt-3.5 text-[12px] leading-snug text-slatey">
+          Earn the bonus interest when you spend min. S$500/month on your card and credit your salary or make 3 GIRO payments.
+        </p>
+        <p className="mt-3 flex items-center gap-1.5 text-[12px] font-semibold text-royal">
+          <Icon.Check size={15} /> Pre-filled from your application — no need to re-enter your details.
+        </p>
       </div>
 
-      <Link to="/" className="btn-primary btn-lg w-full">Back to cards</Link>
-    </motion.div>
+      {/* Sticky CTA shelf — two actions side by side, same pattern as the flow */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur lg:absolute">
+        <div className="mx-auto flex max-w-[460px] items-center gap-3">
+          <Link to="/" className="btn-secondary btn-lg flex-1">Maybe later</Link>
+          <Link to="/" className="btn-primary btn-lg flex-1 bg-uobred hover:bg-uobred-600">Add account</Link>
+        </div>
+      </div>
+    </div>
   )
 }
 
