@@ -227,12 +227,15 @@ export default function Reel() {
   const base = import.meta.env.BASE_URL
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#0a2240] font-sans text-white">
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#0a2240] font-sans text-white">
       <div
         className="pointer-events-none absolute inset-0 opacity-70"
         style={{ background: 'radial-gradient(900px 520px at 82% -8%, #12386f 0%, transparent 60%), radial-gradient(700px 520px at 0% 108%, #0a2a54 0%, transparent 55%)' }}
       />
-      <div className="relative" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
+      <div
+        className="absolute left-1/2 top-1/2"
+        style={{ transform: `translate(-50%,-50%) scale(${scale})`, transformOrigin: 'center center' }}
+      >
       {/* top bar — recording aesthetic */}
       <div className="relative flex items-center justify-between px-8 py-4">
         <div className="flex items-center gap-2.5 text-[14px] font-semibold tracking-wide text-white/70">
