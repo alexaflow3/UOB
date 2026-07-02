@@ -174,6 +174,9 @@ export default function CardDetail() {
   // ?focus=servicing — used by the Stage 2 responses doc previews to land on the
   // "Already have this card" servicing module (opened + scrolled into view).
   const focus = params.get('focus')
+  // ?open=servicing expands the module WITHOUT scrolling (used for static
+  // screenshots captured from the top of the page).
+  const openParam = params.get('open')
   useEffect(() => {
     if (focus !== 'servicing') return undefined
     const t = setTimeout(() => {
@@ -443,7 +446,7 @@ export default function CardDetail() {
           response). One designated, consistent spot on EVERY card page, right
           after the at-a-glance summary: lower priority than Apply but always
           visible, deep-linking the cardholder straight to their task. */}
-      <AlreadyHaveCard card={card} goToRewards={goToRewards} scrollToId={scrollToId} defaultOpen={focus === 'servicing'} />
+      <AlreadyHaveCard card={card} goToRewards={goToRewards} scrollToId={scrollToId} defaultOpen={focus === 'servicing' || openParam === 'servicing'} />
 
       {/* Value prop + fit — one consolidated section: the lifestyle hook flows
           straight into an honest "is this card right for you?" verdict and the
