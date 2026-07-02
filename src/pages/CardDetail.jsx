@@ -177,6 +177,8 @@ export default function CardDetail() {
   // ?open=servicing expands the module WITHOUT scrolling (used for static
   // screenshots captured from the top of the page).
   const openParam = params.get('open')
+  // ?sticky=1 forces the sticky Apply bar visible (for capturing it as an image).
+  const forceSticky = params.get('sticky') === '1'
   useEffect(() => {
     if (focus !== 'servicing') return undefined
     const t = setTimeout(() => {
@@ -588,7 +590,7 @@ export default function CardDetail() {
       )}
 
       {/* Sticky apply (Alexa #4) — appears once the hero CTA scrolls away */}
-      <StickyApply card={card} show={showSticky} />
+      <StickyApply card={card} show={showSticky || forceSticky} />
     </div>
   )
 }
