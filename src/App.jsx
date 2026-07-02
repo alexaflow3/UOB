@@ -8,6 +8,7 @@ import Promotions from './pages/Promotions'
 import Compare from './pages/Compare'
 import Guide from './pages/Guide'
 import Reel from './pages/Reel'
+import BundlePage from './pages/BundlePage'
 import PasswordGate from './components/PasswordGate'
 
 function ScrollToTop() {
@@ -30,6 +31,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Listing />} />
           <Route path="/cards/:slug" element={<CardDetail />} />
+          <Route path="/bundle/:slug" element={<BundlePage />} />
           <Route path="/apply/:slug" element={<Apply />} />
           <Route path="/promotions" element={<Promotions />} />
           <Route path="/compare" element={<Compare />} />

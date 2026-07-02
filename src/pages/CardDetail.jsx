@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useParams, Navigate, useSearchParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cardBySlug, CARDS, PROMOS } from '../data/cards'
+import { bundleBySlug } from '../data/bundles'
 import CardArt, { isPortraitArt } from '../components/CardArt'
 import { Icon } from '../lib/icons'
 import { useCompare } from '../lib/compare'
@@ -130,6 +131,8 @@ export default function CardDetail() {
 
   const tabKeys = Object.keys(card.benefitTabs)
   const relatedPromo = PROMOS.find((p) => p.cards.includes(card.slug))
+  // CASA bundle for this card (in-page cross-sell + dedicated bundle page).
+  const bundle = card.bundleSlug ? bundleBySlug(card.bundleSlug) : null
   // 2.13 — up to 2 cross-sell cards shown inline (same tier first, then any),
   // excluding self and the cards we don't surface in browse.
   const HIDDEN = ['absolute-cashback-card', 'lazada-uob-card', 'visa-infinite-metal-card']
@@ -183,6 +186,15 @@ export default function CardDetail() {
     if (focus !== 'servicing') return undefined
     const t = setTimeout(() => {
       document.getElementById('already-have')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 450)
+    return () => clearTimeout(t)
+  }, [focus, slug])
+  // ?focus=bundle — land on the in-page CASA bundle callout (used by the
+  // responses doc preview + bundle-intent deep links).
+  useEffect(() => {
+    if (focus !== 'bundle') return undefined
+    const t = setTimeout(() => {
+      document.getElementById('bundle')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 450)
     return () => clearTimeout(t)
   }, [focus, slug])
@@ -514,8 +526,15 @@ export default function CardDetail() {
       {/* How it works — worked example of how the cashback/miles are calculated */}
       {card.calculation && <CalculationSection calc={card.calculation} />}
 
-      {/* Linked account — pair the card with a UOB account for bonus interest */}
-      {card.linkedProduct && <LinkedProduct product={card.linkedProduct} />}
+      {/* CASA cross-sell, handled WITHIN the page: a bundle callout that outlines
+          the paired benefits and surfaces the account as the next step to unlock
+          the full rate, routing to a dedicated bundle page. Falls back to the
+          lighter linked-account note for cards without a bundle. */}
+      {bundle ? (
+        <BundleCrossSell bundle={bundle} card={card} />
+      ) : (
+        card.linkedProduct && <LinkedProduct product={card.linkedProduct} />
+      )}
 
       {/* Contextual cross-sell — ONE related promo, only if relevant */}
       {/* Product factsheet — a real, downloadable PDF (not an in-app page) */}
@@ -969,6 +988,61 @@ function LinkedProduct({ product }) {
             {product.cta} <Icon.Arrow size={16} />
           </button>
         )}
+      </div>
+    </section>
+  )
+}
+
+// CASA bundle callout — the in-page (PDP) cross-sell. It outlines the paired
+// benefits without hijacking the card decision, frames the account as the next
+// step that unlocks the FULL rate, and routes to the dedicated bundle page.
+function BundleCrossSell({ bundle, card }) {
+  const noun = card.tier === 'Travel' ? 'miles' : card.tier === 'Rewards' ? 'rewards' : 'cashback'
+  return (
+    <section id="bundle" className="scroll-mt-4 px-5 pt-10">
+      <div className="overflow-hidden rounded-card ring-1 ring-royal/15">
+        {/* Header band — signals a paired offer */}
+        <div className="flex items-center gap-2 bg-navy px-5 py-3 text-white">
+          <Icon.Plus size={16} className="text-sky" />
+          <p className="text-[12px] font-bold uppercase tracking-[0.12em] text-white/90">Better together</p>
+        </div>
+        <div className="bg-gradient-to-br from-sky-soft to-white p-5">
+          <h2 className="font-display text-[19px] font-bold leading-tight text-navy">
+            Unlock the full rate with a {bundle.accountName}
+          </h2>
+          <p className="mt-2 text-[13.5px] leading-relaxed text-ink">
+            Your {card.name.replace('UOB ', '')} already earns {card.earn.rate} {noun}. Add a {bundle.accountName}
+            {' '}and the same everyday spend also unlocks bonus interest on your savings — the full rate, together.
+          </p>
+
+          {/* Paired benefits — card alone vs card + account (the gap is the hook) */}
+          <div className="mt-4 grid grid-cols-2 gap-2.5">
+            <div className="rounded-tile bg-white p-3.5 ring-1 ring-line/70">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slatey">Card alone</p>
+              <p className="mt-1.5 text-[16px] font-extrabold text-navy">{card.earn.rate}</p>
+              <p className="text-[12px] leading-snug text-slatey">{noun} on your spend</p>
+            </div>
+            <div className="rounded-tile border border-royal/30 bg-white p-3.5 ring-1 ring-royal/10">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-royal">Card + account</p>
+              <p className="mt-1.5 text-[16px] font-extrabold text-navy">+ 3.4% p.a.</p>
+              <p className="text-[12px] leading-snug text-slatey">bonus interest on your savings</p>
+            </div>
+          </div>
+
+          <p className="mt-3.5 text-[12px] leading-snug text-slatey">
+            Unlock the bonus interest when you spend min. S$500/month on your card and credit your salary or make 3 GIRO payments.
+          </p>
+
+          <Link
+            to={`/bundle/${bundle.slug}`}
+            className="btn-primary btn-lg mt-4 flex w-full bg-uobred hover:bg-uobred-600"
+          >
+            Explore the {card.name.replace('UOB ', '')} + One Account bundle
+          </Link>
+          <p className="mt-2.5 text-center text-[12px] text-slatey">
+            See how the pairing works, then apply for both in one flow.
+          </p>
+        </div>
       </div>
     </section>
   )

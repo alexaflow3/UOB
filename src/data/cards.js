@@ -17,6 +17,8 @@ export const CARDS = [
     name: 'UOB One Card',
     tier: 'Cashback',
     accent: '#0046AD',
+    // CASA bundle: pairs with the UOB One Account (in-page callout + bundle page)
+    bundleSlug: 'one',
     bestFor: 'Everyday spenders who pay bills & groceries',
     headline: 'Up to 5% cashback on everyday spend',
     tags: ['everyday', 'cashback', 'shopping'],
