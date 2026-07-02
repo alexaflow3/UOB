@@ -26,6 +26,7 @@ export default function Apply() {
   // ?state=complete — used by the Stage 2 responses doc previews to land on the
   // final confirmation + One Account cross-sell without walking the whole form.
   const [submitted, setSubmitted] = useState(params.get('state') === 'complete')
+  const staticShot = params.get('static') === '1'
   if (!card) return <Navigate to="/" replace />
 
   // Transaction complete — the final step is the confirmation + One Account
@@ -88,7 +89,9 @@ export default function Apply() {
 
       <div className={`px-5 pt-5 ${step === 0 ? 'pb-[180px]' : 'pb-6'}`}>
         <AnimatePresence mode="wait">
-          <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
+          {/* ?static=1 skips the entrance fade so the step renders immediately
+              (used for screenshots — headless capture can't advance the fade). */}
+          <motion.div key={step} initial={staticShot ? false : { opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
             {step === 0 && <StepEligibility card={card} fatca={fatca} setFatca={setFatca} />}
             {step === 1 && <StepMethod onBack={() => setStep(0)} onNext={() => setStep(2)} />}
             {step === 2 && <StepDetails onBack={() => setStep(1)} onNext={() => setStep(3)} />}
