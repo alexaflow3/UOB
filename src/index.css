@@ -12,6 +12,9 @@
   }
   body {
     @apply bg-mist text-ink font-sans antialiased;
+    /* Decorative hero elements extend past the viewport; clip so the page never
+       scrolls sideways (and so full-width screenshots have no edge gap). */
+    overflow-x: hidden;
   }
   h1, h2, h3, h4 {
     @apply font-display tracking-[-0.01em];
