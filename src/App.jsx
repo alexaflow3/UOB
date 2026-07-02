@@ -8,6 +8,7 @@ import Promotions from './pages/Promotions'
 import Compare from './pages/Compare'
 import Guide from './pages/Guide'
 import Reel from './pages/Reel'
+import PasswordGate from './components/PasswordGate'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -24,6 +25,7 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
+      <PasswordGate>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Listing />} />
@@ -37,6 +39,7 @@ export default function App() {
         <Route path="/demo" element={<Reel />} />
         <Route path="/reel" element={<Reel />} />
       </Routes>
+      </PasswordGate>
     </>
   )
 }
