@@ -31,7 +31,7 @@ export default function Apply() {
 
   // Transaction complete — the final step is the confirmation + One Account
   // cross-sell (the well-timed add-on to a decision already made).
-  if (submitted) return <ApplyComplete card={card} />
+  if (submitted) return <ApplyComplete card={card} frozen={params.get('static') === '1'} />
 
   const minsLeft = TIME_PER_STEP.slice(step).reduce((a, b) => a + b, 0)
   // Header Back: step backward through the flow, then exit to the page the user
@@ -656,7 +656,28 @@ const CONFETTI = Array.from({ length: 22 }, (_, i) => {
     delay: (i % 7) * 0.05,
   }
 })
-function Confetti() {
+function Confetti({ frozen = false }) {
+  // ?static=1 freezes the burst mid-flight so a screenshot shows the confetti
+  // (headless capture can't advance the looping Framer animation).
+  if (frozen) {
+    return (
+      <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-0 w-0">
+        {CONFETTI.map((p, i) => (
+          <span
+            key={i}
+            className="absolute block"
+            style={{
+              width: p.round ? 8 : 6,
+              height: p.round ? 8 : 11,
+              background: p.color,
+              borderRadius: p.round ? 9999 : 1,
+              transform: `translate(${p.x}px, ${-p.up * 0.72}px) rotate(${p.rot}deg)`,
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
   return (
     <div className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-0 w-0">
       {CONFETTI.map((p, i) => (
@@ -675,7 +696,7 @@ function Confetti() {
 
 // Final step of the apply flow: confirmation of the completed application, then
 // the One Account cross-sell as the well-timed add-on (response doc Q3.3).
-function ApplyComplete({ card }) {
+function ApplyComplete({ card, frozen = false }) {
   const short = card.name.replace('UOB ', '')
   const noun = card.tier === 'Travel' ? 'miles' : card.tier === 'Rewards' ? 'rewards' : 'cashback'
   return (
@@ -687,7 +708,7 @@ function ApplyComplete({ card }) {
           style={{ background: 'radial-gradient(90% 70% at 50% 2%, rgba(0,132,255,0.30), transparent 62%)' }}
         />
         <div className="relative mx-auto h-20 w-20">
-          <Confetti />
+          <Confetti frozen={frozen} />
           <div className="absolute inset-0 rounded-full bg-sky/30 blur-2xl" />
           <motion.div
             initial={{ scale: 0.4, opacity: 0 }}
