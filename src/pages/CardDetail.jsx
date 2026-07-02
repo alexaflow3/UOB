@@ -171,6 +171,16 @@ export default function CardDetail() {
   // leads with a specific category cashback offer and a category photo.
   const [params] = useSearchParams()
   const reward = getReward(card)
+  // ?focus=servicing — used by the Stage 2 responses doc previews to land on the
+  // "Already have this card" servicing module (opened + scrolled into view).
+  const focus = params.get('focus')
+  useEffect(() => {
+    if (focus !== 'servicing') return undefined
+    const t = setTimeout(() => {
+      document.getElementById('already-have')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 450)
+    return () => clearTimeout(t)
+  }, [focus, slug])
   const offerKey = params.get('offer')
   const offerTile = offerKey ? (card.applyTiles || []).find((t) => offerSlug(t.category) === offerKey) : null
   // Per-category nudge for the floating offer photo (some PNGs sit left in their
@@ -433,7 +443,7 @@ export default function CardDetail() {
           response). One designated, consistent spot on EVERY card page, right
           after the at-a-glance summary: lower priority than Apply but always
           visible, deep-linking the cardholder straight to their task. */}
-      <AlreadyHaveCard card={card} goToRewards={goToRewards} scrollToId={scrollToId} />
+      <AlreadyHaveCard card={card} goToRewards={goToRewards} scrollToId={scrollToId} defaultOpen={focus === 'servicing'} />
 
       {/* Value prop + fit — one consolidated section: the lifestyle hook flows
           straight into an honest "is this card right for you?" verdict and the
@@ -1176,14 +1186,15 @@ function servicingOptions(card, { goToRewards, scrollToId }) {
   ]
 }
 
-function AlreadyHaveCard({ card, goToRewards, scrollToId }) {
+function AlreadyHaveCard({ card, goToRewards, scrollToId, defaultOpen = false }) {
   const items = servicingOptions(card, { goToRewards, scrollToId })
   // Collapsed by default so the existing-customer lane is present and recognisable
   // without adding a second tall block beneath "at a glance". Tap the banner to
   // reveal the quick actions — same accordion behaviour as the glance table.
-  const [open, setOpen] = useState(false)
+  // ?focus=servicing (used by the responses doc previews) opens it on load.
+  const [open, setOpen] = useState(defaultOpen)
   return (
-    <section className="px-5 pt-5">
+    <section id="already-have" className="scroll-mt-16 px-5 pt-5">
       <div className="overflow-hidden rounded-card shadow-tile ring-1 ring-royal/15">
         {/* Dark-blue banner — also the accordion toggle */}
         <button

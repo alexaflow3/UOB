@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
-import { Link, useParams, Navigate, useNavigate } from 'react-router-dom'
+import { Link, useParams, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cardBySlug, PROMOS } from '../data/cards'
 import CardArt, { isPortraitArt } from '../components/CardArt'
@@ -20,9 +20,12 @@ export default function Apply() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const card = cardBySlug(slug)
+  const [params] = useSearchParams()
   const [step, setStep] = useState(0)
   const [fatca, setFatca] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+  // ?state=complete — used by the Stage 2 responses doc previews to land on the
+  // final confirmation + One Account cross-sell without walking the whole form.
+  const [submitted, setSubmitted] = useState(params.get('state') === 'complete')
   if (!card) return <Navigate to="/" replace />
 
   // Transaction complete — the final step is the confirmation + One Account
