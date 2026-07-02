@@ -104,22 +104,26 @@ export default function Apply() {
           eligibility step. Fixed on mobile, absolute-within-frame on desktop
           (same pattern as the bottom nav) so it never spans the whole window. */}
       {step === 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur lg:absolute">
-          <div className="mx-auto max-w-[460px] space-y-2.5">
-            <button
-              onClick={() => setStep(1)}
-              className="btn btn-lg w-full gap-2 bg-[#F4333D] text-white hover:bg-[#e02b35]"
-            >
-              Retrieve my info with <SingpassMark />
-            </button>
-            <button
-              onClick={() => setStep(2)}
-              className="btn btn-lg w-full gap-2 text-white hover:brightness-105"
-              style={{ background: 'linear-gradient(135deg,#5b9bf5,#3f86e8)' }}
-            >
-              Existing customer? Log in with
-              <img src={uobLogo} alt="UOB" className="h-[17px] w-auto" style={{ filter: 'brightness(0) invert(1)' }} />
-            </button>
+        <div className="fixed inset-x-0 bottom-0 z-30 lg:absolute">
+          <div className="phone-shell">
+            <div className="border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur">
+              <div className="space-y-2.5">
+                <button
+                  onClick={() => setStep(1)}
+                  className="btn btn-lg w-full gap-2 bg-[#F4333D] text-white hover:bg-[#e02b35]"
+                >
+                  Retrieve my info with <SingpassMark />
+                </button>
+                <button
+                  onClick={() => setStep(2)}
+                  className="btn btn-lg w-full gap-2 text-white hover:brightness-105"
+                  style={{ background: 'linear-gradient(135deg,#5b9bf5,#3f86e8)' }}
+                >
+                  Existing customer? Log in with
+                  <img src={uobLogo} alt="UOB" className="h-[17px] w-auto" style={{ filter: 'brightness(0) invert(1)' }} />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -733,10 +737,14 @@ function ApplyComplete({ card }) {
       </div>
 
       {/* Sticky CTA shelf — two actions side by side, same pattern as the flow */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur lg:absolute">
-        <div className="mx-auto flex max-w-[460px] items-center gap-3">
-          <Link to="/" className="btn-secondary btn-lg flex-1">Maybe later</Link>
-          <Link to="/" className="btn-primary btn-lg flex-1 bg-uobred hover:bg-uobred-600">Add account</Link>
+      <div className="fixed inset-x-0 bottom-0 z-30 lg:absolute">
+        <div className="phone-shell">
+          <div className="border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur">
+            <div className="flex items-center gap-3">
+              <Link to="/" className="btn-secondary btn-lg flex-1">Maybe later</Link>
+              <Link to="/" className="btn-primary btn-lg flex-1 bg-uobred hover:bg-uobred-600">Add account</Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
