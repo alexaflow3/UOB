@@ -227,17 +227,21 @@ export default function Reel() {
   const base = import.meta.env.BASE_URL
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#f3f3f3] font-sans text-ink">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#0a2240] font-sans text-white">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-70"
+        style={{ background: 'radial-gradient(900px 520px at 82% -8%, #12386f 0%, transparent 60%), radial-gradient(700px 520px at 0% 108%, #0a2a54 0%, transparent 55%)' }}
+      />
       <div className="relative" style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}>
       {/* top bar — recording aesthetic */}
       <div className="relative flex items-center justify-between px-8 py-4">
-        <div className="flex items-center gap-2.5 text-[13px] font-semibold tracking-wide text-slatey">
-          <span className="font-display font-extrabold text-navy">form-three</span>
-          <span className="text-royal">×</span>
-          <span className="font-display font-extrabold text-navy">UOB</span>
-          <span className="ml-3 text-slatey">Live prototype review</span>
+        <div className="flex items-center gap-2.5 text-[14px] font-semibold tracking-wide text-white/70">
+          <span className="font-display font-extrabold text-white">form-three</span>
+          <span className="text-sky">×</span>
+          <span className="font-display font-extrabold text-white">UOB</span>
+          <span className="ml-3 text-white/45">Live prototype review</span>
         </div>
-        <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slatey ring-1 ring-line">
+        <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white/80 ring-1 ring-white/15">
           <span className="h-2 w-2 animate-pulse rounded-full bg-uobred" /> Rec
         </div>
       </div>
@@ -285,18 +289,18 @@ export default function Reel() {
         </div>
 
         {/* RIGHT — review thread */}
-        <div className="w-[380px] shrink-0">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-[#0084ff] to-[#00237b] text-[15px] font-extrabold text-white ring-2 ring-white">
+        <div className="w-[460px] shrink-0">
+          <div className="mb-5 flex items-center gap-3.5">
+            <div className="grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-[#0084ff] to-[#00237b] text-[19px] font-extrabold text-white ring-2 ring-white/15">
               MC
             </div>
             <div>
-              <p className="text-[15px] font-bold text-navy">Marcus Chew</p>
-              <p className="text-[12px] text-slatey">Managing Director, Group Retail Marketing · reviewing</p>
+              <p className="text-[20px] font-bold text-white">Marcus Chew</p>
+              <p className="text-[15px] text-white/55">Managing Director, Group Retail Marketing · reviewing</p>
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             <AnimatePresence>
               {comments.map((c) => (
                 <motion.div
@@ -305,12 +309,12 @@ export default function Reel() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex gap-3 rounded-2xl rounded-tl-sm bg-white p-3.5 shadow-tile ring-1 ring-line"
+                  className="flex gap-3.5 rounded-2xl rounded-tl-sm bg-white/[0.08] p-4 ring-1 ring-white/12 backdrop-blur"
                 >
-                  <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#0084ff] to-[#00237b] text-[9px] font-bold text-white">
+                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#0084ff] to-[#00237b] text-[10px] font-bold text-white">
                     MC
                   </span>
-                  <p className="text-[13.5px] leading-relaxed text-ink">
+                  <p className="text-[18px] leading-relaxed text-white/90">
                     <Typewriter text={c.text} />
                   </p>
                 </motion.div>
@@ -318,7 +322,7 @@ export default function Reel() {
             </AnimatePresence>
 
             {comments.length === 0 && (
-              <p className="rounded-2xl bg-white p-3.5 text-[13px] text-slatey ring-1 ring-line">
+              <p className="rounded-2xl bg-white/[0.05] p-4 text-[17px] text-white/50 ring-1 ring-white/10">
                 Walking through the UOB One Card journey…
               </p>
             )}
