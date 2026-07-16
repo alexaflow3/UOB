@@ -104,7 +104,7 @@ export default function Apply() {
           eligibility step. Fixed on mobile, absolute-within-frame on desktop
           (same pattern as the bottom nav) so it never spans the whole window. */}
       {step === 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 lg:absolute">
+        <div className="fixed inset-x-0 bottom-0 z-30">
           <div className="phone-shell">
             <div className="border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur">
               <div className="space-y-2.5">
@@ -758,7 +758,7 @@ function ApplyComplete({ card, frozen = false }) {
       </div>
 
       {/* Sticky CTA shelf — two actions side by side, same pattern as the flow */}
-      <div className="fixed inset-x-0 bottom-0 z-30 lg:absolute">
+      <div className="fixed inset-x-0 bottom-0 z-30">
         <div className="phone-shell">
           <div className="border-t border-line bg-white/95 px-5 pb-4 pt-3 shadow-[0_-10px_28px_rgba(10,34,64,0.12)] backdrop-blur">
             <div className="flex items-center gap-3">

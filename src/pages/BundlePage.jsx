@@ -19,19 +19,19 @@ export default function BundlePage() {
     <div className="pb-20">
       {/* Hero — navy field, the two products shown together */}
       <div className="bg-[linear-gradient(180deg,#0a2240_0%,#0a2240_60%,#0c2647_100%)] text-white">
-        <div className="px-5 pt-3">
+        <div className="px-5 pt-3 lg:mx-auto lg:max-w-[1180px] lg:px-8 lg:pt-5">
           <Link to={`/cards/${bundle.cardSlug}`} className="inline-flex items-center gap-1 text-[13px] font-semibold text-white/80 hover:text-white">
             <Icon.ArrowLeft size={16} /> Back to {card.name.replace('UOB ', '')}
           </Link>
         </div>
 
-        <section className="px-5 pt-6">
+        <section className="px-5 pt-6 lg:mx-auto lg:grid lg:max-w-[1180px] lg:grid-cols-2 lg:items-center lg:gap-x-14 lg:px-8 lg:pb-10 lg:pt-10">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-sky">Bundle · Better together</p>
           <h1 className="mt-2 font-display text-[24px] font-bold leading-[1.2] text-white">{bundle.name}</h1>
           <p className="mt-2.5 text-[14px] leading-snug text-white/70">{bundle.tagline}</p>
 
           {/* Two-product visual: card + account, joined by a plus */}
-          <div className="mx-auto mt-8 flex w-full max-w-[320px] items-center justify-center gap-3">
+          <div className="mx-auto mt-8 flex w-full max-w-[320px] items-center justify-center gap-3 lg:col-start-2 lg:row-start-1 lg:row-span-5 lg:mt-0 lg:max-w-[430px]">
             <motion.div
               initial={{ opacity: 0, y: 16, rotate: -3 }}
               animate={{ opacity: 1, y: 0, rotate: 0 }}
@@ -67,7 +67,7 @@ export default function BundlePage() {
             ))}
           </div>
 
-          <Link to={`/apply/${bundle.cardSlug}`} className="btn-primary btn-lg mt-7 flex w-full bg-uobred hover:bg-uobred-600">
+          <Link to={`/apply/${bundle.cardSlug}`} className="btn-primary btn-lg mt-7 flex w-full bg-uobred hover:bg-uobred-600 lg:w-auto lg:justify-self-start lg:px-12">
             Apply for both
           </Link>
           <p className="mt-3 pb-8 text-center text-[12px] text-white/55">
@@ -76,6 +76,8 @@ export default function BundlePage() {
         </section>
       </div>
 
+      {/* Desktop container for content sections */}
+      <div className="lg:mx-auto lg:max-w-[1140px] lg:px-8">
       {/* Answer-first summary (GEO/SEO) */}
       <section className="px-5 pt-8">
         <h2 className="text-[13px] font-bold uppercase tracking-wide text-slatey">Why apply for both</h2>
@@ -84,7 +86,7 @@ export default function BundlePage() {
 
       {/* Reasons */}
       <section className="px-5 pt-8">
-        <div className="space-y-3">
+        <div className="space-y-3 lg:grid lg:grid-cols-3 lg:gap-4 lg:space-y-0">
           {bundle.reasons.map((r) => {
             const RIcon = (r.icon && Icon[r.icon]) || Icon.Spark
             return (
@@ -143,6 +145,7 @@ export default function BundlePage() {
           </Link>
         </div>
       </section>
+      </div>
     </div>
   )
 }

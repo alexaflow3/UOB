@@ -35,7 +35,7 @@ export default function Listing() {
   }, [active, sort])
 
   return (
-    <div>
+    <div className="lg:mx-auto lg:max-w-[1180px] lg:px-8">
       {/* Compact hero — cards-led, not promo-led */}
       <section className="px-5 pt-6">
         <p className="eyebrow">UOB Credit Cards</p>
@@ -45,7 +45,7 @@ export default function Listing() {
       </section>
 
       {/* Use-case filters */}
-      <section className="sticky top-14 z-20 mt-5 bg-mist/90 py-3 backdrop-blur lg:top-0">
+      <section className="sticky top-14 z-20 mt-5 bg-mist/90 py-3 backdrop-blur">
         <div className="no-scrollbar flex gap-2 overflow-x-auto px-5">
           <FilterChip id="all" label="All cards" active={active === 'all'} onClick={setFilter} />
           {USE_CASES.map((u) => (
@@ -90,7 +90,7 @@ export default function Listing() {
       </div>
 
       {/* Tiles */}
-      <section className="space-y-4 px-5">
+      <section className="space-y-4 px-5 lg:grid lg:grid-cols-3 lg:items-start lg:gap-5 lg:space-y-0">
         {cards.map((c, i) => (
           <DecisionTile key={c.slug} card={c} index={i} />
         ))}

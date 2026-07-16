@@ -289,7 +289,7 @@ export default function CardDetail() {
       {/* Hero — dark navy field so the card face pops (2.2). White headline,
           translucent chips, white benefit bullets, and an in-hero Apply Now. */}
       <div className="bg-[linear-gradient(180deg,#0a2240_0%,#0a2240_62%,#0c2647_100%)] text-white">
-        <div className="px-5 pt-3">
+        <div className="px-5 pt-3 lg:mx-auto lg:max-w-[1180px] lg:px-8 lg:pt-5">
           {rewardFirst ? (
             <nav className="flex flex-wrap items-center gap-1.5 text-[12.5px] font-semibold text-white/55">
               <Link to="/" className="hover:text-white">All cards</Link>
@@ -307,7 +307,7 @@ export default function CardDetail() {
 
         {/* Card-first hero. Larger card face (key UOB brand asset). Two leads:
             product-first (organic) or reward-first (paid entry, ?from=offer). */}
-        <section className="px-5 pt-6">
+        <section className="px-5 pt-6 lg:mx-auto lg:grid lg:max-w-[1180px] lg:grid-cols-2 lg:items-start lg:gap-x-14 lg:px-8 lg:pb-8 lg:pt-10">
           {rewardFirst ? (
             <>
               <h1 className="font-display text-[26px] font-extrabold leading-[1.15] text-white">{lead.big}</h1>
@@ -327,7 +327,7 @@ export default function CardDetail() {
             // food cluster grounded on the left and the UOB card standing on a
             // lit blue pedestal on the right, sharing one stage plane. Landscape
             // cards are short, so the stage is shorter to avoid empty top space.
-            <div className="relative mx-auto mt-6 w-full max-w-[340px]" style={{ height: isPortraitArt(card) ? '296px' : '244px' }}>
+            <div className="relative mx-auto mt-6 w-full max-w-[340px] lg:col-start-2 lg:row-start-1 lg:row-span-6 lg:mt-2 lg:max-w-[420px] lg:self-center" style={{ height: isPortraitArt(card) ? '296px' : '244px' }}>
               {/* Ambient radial light so the navy has depth — wide and soft so
                   it never shows a hard edge. */}
               <div
@@ -382,7 +382,7 @@ export default function CardDetail() {
               </div>
             </div>
           ) : (
-            <div className={`mx-auto mt-6 ${isPortraitArt(card) ? 'w-[37%] max-w-[138px]' : 'w-[80%] max-w-[300px]'}`}>
+            <div className={`mx-auto mt-6 lg:col-start-2 lg:row-start-1 lg:row-span-6 lg:mt-2 lg:self-center ${isPortraitArt(card) ? 'w-[37%] max-w-[138px] lg:w-[52%] lg:max-w-[220px]' : 'w-[80%] max-w-[300px] lg:w-[88%] lg:max-w-[420px]'}`}>
               <motion.div initial={{ opacity: 0, y: 18, rotate: -2 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
                 <CardArt card={card} bare floating />
               </motion.div>
@@ -410,7 +410,7 @@ export default function CardDetail() {
           <Link
             ref={heroCtaRef}
             to={`/apply/${card.slug}`}
-            className="btn-primary btn-lg mt-5 flex w-full bg-uobred hover:bg-uobred-600"
+            className="btn-primary btn-lg mt-5 flex w-full bg-uobred hover:bg-uobred-600 lg:w-auto lg:justify-self-start lg:px-12"
           >
             Apply now
           </Link>
@@ -425,8 +425,8 @@ export default function CardDetail() {
         </section>
 
         {/* Anchor links + T&Cs — same row, same styling. */}
-        <div id="card-details" className="scroll-mt-4 mt-5 px-5">
-          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 pb-7 text-[12.5px] font-semibold text-sky">
+        <div id="card-details" className="scroll-mt-4 mt-5 px-5 lg:mx-auto lg:mt-0 lg:max-w-[1180px] lg:px-8">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 pb-7 text-[12.5px] font-semibold text-sky lg:justify-start lg:gap-x-8 lg:text-[13.5px]">
             {card.benefits && <button onClick={goToRewards} className="hover:text-white">Rewards</button>}
             <button onClick={() => scrollToId('eligibility')} className="hover:text-white">Eligibility</button>
             <button onClick={() => scrollToId('fees')} className="hover:text-white">Fees</button>
@@ -441,6 +441,7 @@ export default function CardDetail() {
         </div>
       </div>
 
+      <div className="lg:mx-auto lg:max-w-[1140px] lg:px-8">
       {/* At a glance — table for cards with structured rows, else the 4-fact grid */}
       {card.glance ? (
         <GlanceTable glance={card.glance} />
@@ -580,7 +581,7 @@ export default function CardDetail() {
       {crossSells.length > 0 && (
         <section className="px-5 pt-10">
           <h2 className="mb-2 text-[13px] font-bold uppercase tracking-wide text-slatey">You may also consider</h2>
-          <div className="space-y-3">
+          <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
             {crossSells.map((cs) => (
               <Link key={cs.slug} to={`/cards/${cs.slug}`} className="surface flex items-center gap-3 p-3">
                 <div className="w-[28%]"><CardArt card={cs} /></div>
@@ -607,6 +608,8 @@ export default function CardDetail() {
           </div>
         </section>
       )}
+
+      </div>
 
       {/* Sticky apply (Alexa #4) — appears once the hero CTA scrolls away */}
       <StickyApply card={card} show={showSticky || forceSticky} />
@@ -819,7 +822,7 @@ function SecondaryBenefits({ items, heading }) {
       <h2 className="font-display text-[20px] font-bold leading-tight text-navy">
         {heading || 'More reasons to love this card'}
       </h2>
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         {items.map((it, i) => {
           const ItIcon = (it.icon && Icon[it.icon]) || Icon.Spark
           const photo = perkImg(PERK_KEY[it.title])
@@ -1035,7 +1038,7 @@ function BundleCrossSell({ bundle, card }) {
 
           <Link
             to={`/bundle/${bundle.slug}`}
-            className="btn-primary btn-lg mt-4 flex w-full bg-uobred hover:bg-uobred-600"
+            className="btn-primary btn-lg mt-4 flex w-full bg-uobred hover:bg-uobred-600 lg:mx-auto lg:w-auto lg:px-10"
           >
             Explore the {card.name.replace('UOB ', '')} + One Account bundle
           </Link>
@@ -1059,7 +1062,7 @@ function HowToApply({ card }) {
       <p className="mt-3 text-[14px] leading-relaxed text-ink">
         Apply via UOB Personal Internet Banking or Singpass (Myinfo). It only takes a few minutes.
       </p>
-      <Link to={`/apply/${card.slug}`} className="btn-primary btn-lg mt-4 flex w-full bg-uobred hover:bg-uobred-600">
+      <Link to={`/apply/${card.slug}`} className="btn-primary btn-lg mt-4 flex w-full bg-uobred hover:bg-uobred-600 lg:w-auto lg:inline-flex lg:px-12">
         Apply now
       </Link>
       <div className="mt-4 rounded-card bg-white p-4 ring-1 ring-line/70">
@@ -1343,10 +1346,11 @@ function StickyApply({ card, show }) {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-x-0 bottom-0 z-30 lg:absolute"
+          className="fixed inset-x-0 bottom-0 z-30"
         >
-          <div className="phone-shell px-3 pb-3">
-            <div className="flex items-center gap-3 rounded-2xl bg-white/95 p-2.5 pl-3 shadow-sticky ring-1 ring-line backdrop-blur">
+          <div className="phone-shell px-3 pb-3 lg:max-w-none lg:px-0 lg:pb-0">
+            <div className="rounded-2xl bg-white/95 p-2.5 shadow-sticky ring-1 ring-line backdrop-blur lg:rounded-none lg:border-t lg:border-line lg:p-3 lg:ring-0">
+            <div className="flex items-center gap-3 pl-0.5 lg:mx-auto lg:max-w-[1180px] lg:px-8">
               <div className="flex h-11 w-16 shrink-0 items-center justify-center">
                 <CardArt card={card} className="!aspect-auto h-full" />
               </div>
@@ -1356,6 +1360,7 @@ function StickyApply({ card, show }) {
                 <p className="line-clamp-2 text-[12.5px] font-bold leading-tight text-navy">{card.headline}</p>
               </div>
               <Link to={`/apply/${card.slug}`} className="btn-primary btn-lg bg-uobred px-7 hover:bg-uobred-600">Apply now</Link>
+            </div>
             </div>
           </div>
         </motion.div>

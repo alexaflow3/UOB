@@ -21,7 +21,7 @@ export default function CompareBar() {
           animate={{ y: 0 }}
           exit={{ y: 120 }}
           transition={{ type: 'spring', stiffness: 380, damping: 34 }}
-          className="fixed inset-x-0 bottom-0 z-40 lg:absolute"
+          className="fixed inset-x-0 bottom-0 z-40"
         >
           <div className="phone-shell px-3 pb-3">
             <div className="rounded-2xl bg-navy text-white shadow-lift ring-1 ring-white/10">

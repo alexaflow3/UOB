@@ -57,7 +57,7 @@ export default function Compare() {
   const selected = slots.map(cardBySlug)
 
   return (
-    <div className="pb-10">
+    <div className="pb-10 lg:mx-auto lg:max-w-[900px] lg:px-8">
       <section className="px-5 pt-5">
         <p className="eyebrow">Compare cards</p>
         <h1 className="mt-1 font-display text-[24px] font-extrabold leading-[1.1] text-navy">

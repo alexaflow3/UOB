@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Icon } from '../lib/icons'
 import CompareBar from './CompareBar'
@@ -13,16 +12,44 @@ function Wordmark() {
   )
 }
 
+const tabs = [
+  { to: '/', label: 'Cards', icon: Icon.Wallet, end: true },
+  { to: '/promotions', label: 'Offers', icon: Icon.Spark },
+  { to: '/compare', label: 'Compare', icon: Icon.Scales },
+]
+
 function Header() {
-  // Fixed (not sticky): the phone-frame wrapper uses overflow-hidden, which
-  // breaks position: sticky for descendants. Mirror the BottomNav approach —
-  // fixed on mobile (window scroll), constrained to the frame on desktop where
-  // the inner <main> is the scroll container.
+  // Fixed on both breakpoints (window scroll). Mobile shows the compact
+  // wordmark + icons bar; desktop widens to the UOB.com header structure —
+  // logo left, primary nav links inline, utility icons right — using the
+  // same components and tokens (mobile markup is unchanged below lg).
   return (
-    <header className="fixed inset-x-0 top-0 z-30 lg:absolute">
-      <div className="phone-shell">
-        <div className="flex h-14 items-center justify-between border-b border-line/80 bg-white/90 px-5 backdrop-blur-md">
-          <Wordmark />
+    <header className="fixed inset-x-0 top-0 z-30">
+      <div className="bg-white/90 backdrop-blur-md lg:border-b lg:border-line/80">
+        <div className="mx-auto flex h-14 w-full max-w-phone items-center justify-between border-b border-line/80 px-5 lg:max-w-[1180px] lg:px-8 lg:border-0">
+
+          <div className="flex items-center gap-10">
+            <Wordmark />
+            {/* Desktop-only primary nav — same destinations as the mobile tab bar */}
+            <nav className="hidden items-center gap-7 lg:flex">
+              {tabs.map((t) => (
+                <NavLink
+                  key={t.to}
+                  to={t.to}
+                  end={t.end}
+                  className={({ isActive }) =>
+                    `relative py-4 text-[14px] font-semibold transition-colors ${
+                      isActive
+                        ? 'text-royal after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:rounded-full after:bg-royal'
+                        : 'text-navy hover:text-royal'
+                    }`
+                  }
+                >
+                  {t.label}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
           <div className="flex items-center gap-1">
             <button className="grid h-9 w-9 place-items-center rounded-full text-navy hover:bg-mist" aria-label="Search">
               <Icon.Search size={20} />
@@ -37,15 +64,9 @@ function Header() {
   )
 }
 
-const tabs = [
-  { to: '/', label: 'Cards', icon: Icon.Wallet, end: true },
-  { to: '/promotions', label: 'Offers', icon: Icon.Spark },
-  { to: '/compare', label: 'Compare', icon: Icon.Scales },
-]
-
 function BottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 lg:absolute">
+    <nav className="fixed inset-x-0 bottom-0 z-20 lg:hidden">
       <div className="phone-shell">
         <div className="mx-3 mb-3 flex items-center justify-around rounded-2xl border border-line bg-white/95 px-2 py-1.5 shadow-tile backdrop-blur">
           {tabs.map((t) => (
@@ -79,50 +100,15 @@ export default function Layout() {
   const isDetail = pathname.startsWith('/cards/')
   const hideNav = isApply || isDetail
 
-  // Forward wheel scrolling from anywhere on the desktop page into the phone's
-  // screen — lets you scroll the demo (e.g. while screen-recording) without the
-  // cursor ever entering the device frame. The screen itself still scrolls
-  // natively when hovered, so we only forward events that land off-device.
-  const screenRef = useRef(null)
-  const handleWheel = (e) => {
-    const el = screenRef.current
-    if (!el) return
-    if (!window.matchMedia('(min-width: 1024px)').matches) return
-    if (el.contains(e.target)) return
-    el.scrollTop += e.deltaY
-  }
-
   return (
-    <div
-      onWheel={handleWheel}
-      className="min-h-screen lg:flex lg:h-screen lg:items-center lg:justify-center lg:overflow-hidden lg:py-4"
-    >
-      {/* Desktop backdrop — frames the phone-first demo */}
-      <div className="pointer-events-none fixed inset-0 hidden lg:block">
-        <div className="absolute inset-0 bg-navy" />
-        <div
-          className="absolute inset-0 opacity-[0.5]"
-          style={{
-            background:
-              'radial-gradient(900px 500px at 80% -5%, #0e3a78 0%, transparent 60%), radial-gradient(700px 500px at 0% 100%, #06294f 0%, transparent 55%)',
-          }}
-        />
-      </div>
-
-      {/* The phone — slim, tall device that fills the available viewport height
-          on desktop (so it never reads short-and-chunky), width fixed to the
-          mobile footprint. Only the screen scrolls. */}
-      <div className="relative z-10 mx-auto w-full max-w-phone bg-mist lg:h-[calc(100vh-2rem)] lg:rounded-[55px] lg:p-3 lg:shadow-[0_50px_120px_-40px_rgba(0,0,0,0.7)] lg:ring-1 lg:ring-white/10">
-        <div className="relative min-h-screen overflow-hidden bg-mist lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:rounded-[46px]">
-          {!isApply && <Header />}
-          {/* pt-14 clears the now-fixed/absolute header (h-14) whenever it's shown. */}
-          <main ref={screenRef} className={`pb-28 lg:min-h-0 lg:flex-1 lg:overflow-y-auto ${!isApply ? 'pt-14' : ''}`}>
-            <Outlet />
-          </main>
-          {!hideNav && <BottomNav />}
-          {!isApply && pathname !== '/compare' && <CompareBar />}
-        </div>
-      </div>
+    <div className="min-h-screen bg-mist">
+      {!isApply && <Header />}
+      {/* pt-14 clears the fixed header (h-14) whenever it's shown. */}
+      <main className={`pb-28 ${!isApply ? 'pt-14' : ''}`}>
+        <Outlet />
+      </main>
+      {!hideNav && <BottomNav />}
+      {!isApply && pathname !== '/compare' && <CompareBar />}
     </div>
   )
 }

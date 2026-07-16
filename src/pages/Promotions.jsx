@@ -32,7 +32,7 @@ export default function Promotions() {
   const sorted = [...PROMOS].sort((a, b) => new Date(a.validUntil) - new Date(b.validUntil))
 
   return (
-    <div className="pb-8">
+    <div className="pb-8 lg:mx-auto lg:max-w-[1180px] lg:px-8">
       <section className="px-5 pt-5">
         <p className="eyebrow">Card offers</p>
         <h1 className="mt-1 font-display text-[26px] font-extrabold leading-[1.08] text-navy">
@@ -43,7 +43,7 @@ export default function Promotions() {
         </p>
       </section>
 
-      <section className="mt-5 space-y-4 px-5">
+      <section className="mt-5 space-y-4 px-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5 lg:space-y-0">
         {sorted.map((p, i) => {
           const r = REWARD[p.rewardImage] || REWARD.cash
           const days = Math.ceil((new Date(p.validUntil) - now) / 86400000)
