@@ -77,6 +77,7 @@ export default function Compare() {
       {/* Comparison table — exactly 2 columns, no horizontal scroll */}
       <section className="pt-6">
         <div className="px-5">
+          <div className="overflow-hidden rounded-card bg-white ring-1 ring-line/70">
           <table className="w-full table-fixed border-separate border-spacing-0">
             <thead>
               <tr>
@@ -84,7 +85,7 @@ export default function Compare() {
                 {selected.map((c) => (
                   // Bottom-align so a landscape (short) card sits level with a
                   // portrait (tall) one instead of floating at the top.
-                  <th key={c.slug} className="px-2 align-bottom">
+                  <th key={c.slug} className="px-3 pb-3 pt-4 align-bottom">
                     <div className="mx-auto flex w-3/4 items-end justify-center"><CardArt card={c} /></div>
                     <p className="mt-2 text-[12px] font-bold leading-tight text-navy">{c.name.replace('UOB ', '')}</p>
                     <Link
@@ -98,28 +99,32 @@ export default function Compare() {
               </tr>
             </thead>
             <tbody>
-              {ROWS.map((row, ri) => (
-                <tr key={row.key} className={ri % 2 ? 'bg-white' : ''}>
-                  <td className={`py-3 pr-2 align-top text-[12px] font-semibold text-slatey ${ri % 2 ? 'bg-white' : 'bg-mist'}`}>
+              {ROWS.map((row) => (
+                <tr key={row.key}>
+                  {/* UDS Data & Tables › table-with-top-left-heading: the label
+                      column is a filled heading cell, values sit in bordered
+                      white cells beside it. */}
+                  <td className="border-t border-white/15 bg-navy px-3 py-3 align-top text-[12px] font-bold leading-snug text-white">
                     {row.label}
                   </td>
                   {selected.map((c) => (
-                    <td key={c.slug} className={`px-2 py-3 align-top text-[13px] leading-snug ${row.strong ? 'font-extrabold text-royal' : 'text-ink'}`}>
+                    <td key={c.slug} className={`border-t border-line/70 px-3 py-3 align-top text-[13px] leading-snug ${row.strong ? 'font-extrabold text-royal' : 'text-ink'}`}>
                       {row.get(c)}
                     </td>
                   ))}
                 </tr>
               ))}
               <tr>
-                <td />
+                <td className="border-t border-white/15 bg-navy" />
                 {selected.map((c) => (
-                  <td key={c.slug} className="px-2 pt-3">
+                  <td key={c.slug} className="border-t border-line/70 px-3 py-3">
                     <Link to={`/cards/${c.slug}`} className="btn-ghost btn-md flex w-full text-[12px]">View details</Link>
                   </td>
                 ))}
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
         <p className="px-5 pt-4 text-center text-[12px] text-slatey">Figures are illustrative.</p>
       </section>
