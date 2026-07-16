@@ -425,7 +425,7 @@ export default function CardDetail() {
         </section>
 
         {/* Anchor links + T&Cs — same row, same styling. */}
-        <div id="card-details" className="scroll-mt-4 mt-5 px-5 lg:mx-auto lg:mt-0 lg:max-w-[1180px] lg:px-8">
+        <div id="card-details" className="scroll-mt-4 mt-5 px-5 lg:hidden">
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 pb-7 text-[12.5px] font-semibold text-sky lg:justify-start lg:gap-x-8 lg:text-[13.5px]">
             {card.benefits && <button onClick={goToRewards} className="hover:text-white">Rewards</button>}
             <button onClick={() => scrollToId('eligibility')} className="hover:text-white">Eligibility</button>
@@ -438,6 +438,21 @@ export default function CardDetail() {
               T&amp;Cs
             </a>
           </div>
+        </div>
+      </div>
+
+      {/* Desktop sticky section nav (UDS stickySection): anchor links + Apply,
+          pinned under the header once you scroll. Hidden on mobile — the mobile
+          pattern is the bottom sticky Apply pill instead. */}
+      <div className="hidden border-b border-line bg-white/95 backdrop-blur lg:sticky lg:top-14 lg:z-20 lg:block">
+        <div className="mx-auto flex max-w-[1180px] items-center gap-8 px-8">
+          {card.benefits && (
+            <button onClick={goToRewards} className="border-b-[3px] border-transparent py-3.5 text-[13.5px] font-semibold text-navy hover:border-royal hover:text-royal">Rewards</button>
+          )}
+          <button onClick={() => scrollToId('eligibility')} className="border-b-[3px] border-transparent py-3.5 text-[13.5px] font-semibold text-navy hover:border-royal hover:text-royal">Eligibility</button>
+          <button onClick={() => scrollToId('fees')} className="border-b-[3px] border-transparent py-3.5 text-[13.5px] font-semibold text-navy hover:border-royal hover:text-royal">Fees</button>
+          <a href={tcHref} {...(factsheet ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className="border-b-[3px] border-transparent py-3.5 text-[13.5px] font-semibold text-navy hover:border-royal hover:text-royal">T&amp;Cs</a>
+          <Link to={`/apply/${card.slug}`} className="btn btn-md ml-auto border-2 border-royal bg-white px-6 text-royal hover:bg-sky-soft">Apply now</Link>
         </div>
       </div>
 
@@ -1346,9 +1361,9 @@ function StickyApply({ card, show }) {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-x-0 bottom-0 z-30"
+          className="fixed inset-x-0 bottom-0 z-30 lg:hidden"
         >
-          <div className="phone-shell px-3 pb-3 lg:max-w-none lg:px-0 lg:pb-0">
+          <div className="phone-shell px-3 pb-3">
             <div className="rounded-2xl bg-white/95 p-2.5 shadow-sticky ring-1 ring-line backdrop-blur lg:rounded-none lg:border-t lg:border-line lg:p-3 lg:ring-0">
             <div className="flex items-center gap-3 pl-0.5 lg:mx-auto lg:max-w-[1180px] lg:px-8">
               <div className="flex h-11 w-16 shrink-0 items-center justify-center">
