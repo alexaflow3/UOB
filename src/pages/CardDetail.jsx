@@ -452,7 +452,7 @@ export default function CardDetail() {
           <button onClick={() => scrollToId('eligibility')} className="border-b-[3px] border-transparent py-3.5 text-[13.5px] font-semibold text-navy hover:border-royal hover:text-royal">Eligibility</button>
           <button onClick={() => scrollToId('fees')} className="border-b-[3px] border-transparent py-3.5 text-[13.5px] font-semibold text-navy hover:border-royal hover:text-royal">Fees</button>
           <a href={tcHref} {...(factsheet ? { target: '_blank', rel: 'noopener noreferrer' } : {})} className="border-b-[3px] border-transparent py-3.5 text-[13.5px] font-semibold text-navy hover:border-royal hover:text-royal">T&amp;Cs</a>
-          <Link to={`/apply/${card.slug}`} className="btn btn-md ml-auto border-2 border-royal bg-white px-6 text-royal hover:bg-sky-soft">Apply now</Link>
+          <Link to={`/apply/${card.slug}`} className="btn-primary btn-md ml-auto bg-uobred px-6 hover:bg-uobred-600">Apply now</Link>
         </div>
       </div>
 
