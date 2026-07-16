@@ -486,19 +486,20 @@ export default function CardDetail() {
           <div className="px-5 pt-10">
             <hr className="border-t border-line" />
           </div>
-          <section className="px-5 pt-8">
-            {/* 2.8 — headline first, then image, then description. */}
+          <section className="px-5 pt-8 lg:grid lg:grid-cols-[0.92fr,1.08fr] lg:items-center lg:gap-x-12">
+            {/* 2.8 — headline first, then image, then description (mobile).
+                Desktop mirrors the UDS contentBlock: image left, text right. */}
             {card.story && (
               <>
-                <h2 className="font-display text-[20px] font-bold leading-tight text-navy">{card.story.heading}</h2>
+                <h2 className="font-display text-[20px] font-bold leading-tight text-navy lg:col-start-2 lg:text-[24px]">{card.story.heading}</h2>
                 {card.story.image && storyImage(card.story.image) && (
                   <img
                     src={storyImage(card.story.image)}
                     alt={`${card.name} — everyday spending categories`}
-                    className="mt-5 w-full rounded-card object-cover"
+                    className="mt-5 w-full rounded-card object-cover lg:col-start-1 lg:row-start-1 lg:row-span-3 lg:mt-0 lg:self-center"
                   />
                 )}
-                <div className="mt-5 space-y-3.5 text-[14px] leading-relaxed text-ink">
+                <div className="mt-5 space-y-3.5 text-[14px] leading-relaxed text-ink lg:col-start-2 lg:mt-4">
                   {card.story.paragraphs.map((p) => <p key={p}>{p}</p>)}
                 </div>
               </>
@@ -922,7 +923,7 @@ function FeesSection({ card }) {
 // "think twice if" column so people can self-qualify (and self-disqualify).
 function FitCheck({ fit, withinStory }) {
   return (
-    <div className={withinStory ? 'mt-5' : ''}>
+    <div className={`lg:col-start-2 ${withinStory ? 'mt-5 lg:mt-4' : ''}`}>
       <div className="rounded-card bg-[#f0f8f3] p-4 ring-1 ring-[#cfe9da]">
         <p className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wide text-[#0f7a4f]">
           <Icon.CheckCircle size={17} /> This card is right for you if…
